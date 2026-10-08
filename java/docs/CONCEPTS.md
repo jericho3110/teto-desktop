@@ -208,7 +208,8 @@ would add nicer reports, parameterized tests and IDE integration.
 
 ## References
 
-**Official**
+### Official
+
 - Java Language Specification, records ✔: <https://docs.oracle.com/javase/specs/jls/se25/html/jls-8.html#jls-8.10>
 - JEP 395, Records: <https://openjdk.org/jeps/395>
 - JEP 361, Switch expressions: <https://openjdk.org/jeps/361>
@@ -219,6 +220,7 @@ would add nicer reports, parameterized tests and IDE integration.
 - `MessageDigest.isEqual`: <https://docs.oracle.com/en/java/javase/25/docs/api/java.base/java/security/MessageDigest.html>
 - `javac` options (`-Xlint`): <https://docs.oracle.com/en/java/javase/25/docs/specs/man/javac.html>
 
-**Other**
+### Other
+
 - Joshua Bloch, *Effective Java* (3rd ed.), items 17 (minimize mutability) and 19 (design for inheritance or prohibit it)
 - Baeldung, try-with-resources: <https://www.baeldung.com/java-try-with-resources>

@@ -220,13 +220,15 @@ Things learned by running against real systems, each pinned by code or a test:
 
 ## References
 
-**Patterns**
+### Patterns
+
 - Martin Fowler, *Microservices*: <https://martinfowler.com/articles/microservices.html>
 - Alistair Cockburn, *Hexagonal architecture*: <https://alistair.cockburn.us/hexagonal-architecture/>
 - Gary Bernhardt, *Functional core, imperative shell*: <https://www.destroyallsoftware.com/screencasts/catalog/functional-core-imperative-shell>
 - Simon Brown, *Package by component and architecturally-aligned testing*: <https://www.codingthearchitecture.com/2015/03/08/package_by_component_and_architecturally_aligned_testing.html>
 
-**Links between languages**
+### Links between languages
+
 - HTML Standard, Server-sent events ✔: <https://html.spec.whatwg.org/multipage/server-sent-events.html>
 - Claude Code, run programmatically ✔: <https://code.claude.com/docs/en/headless>
 - Tauri, calling Rust from the frontend: <https://v2.tauri.app/develop/calling-rust/>

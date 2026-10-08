@@ -214,7 +214,8 @@ dependency; the standard library is enough here.)
 
 ## References
 
-**Official**
+### Official
+
 - Python tutorial, modules and `__main__` ✔: <https://docs.python.org/3/tutorial/modules.html>
 - `__main__`: <https://docs.python.org/3/library/__main__.html>
 - PEP 484 (type hints): <https://peps.python.org/pep-0484/>
@@ -228,6 +229,7 @@ dependency; the standard library is enough here.)
 - `unittest`: <https://docs.python.org/3/library/unittest.html>
 - Glossary, GIL: <https://docs.python.org/3/glossary.html#term-global-interpreter-lock>
 
-**Other**
+### Other
+
 - Real Python, *Python Type Checking*: <https://realpython.com/python-type-checking/>
 - Real Python, *f-strings*: <https://realpython.com/python-f-strings/>

@@ -13,6 +13,12 @@ Workspace-level changes. Each language folder has its own
   `assets/` and workspace docs in `docs/`.
 
 ### Added
+- New guides: `docs/MEMORY.md` (C/C++/Rust/GC memory management and other
+  memory-safe languages), `docs/PARADIGMS.md` (procedural, OOP pillars,
+  functional, data-oriented…), `docs/LANGUAGES.md` (strengths, weaknesses,
+  who covers for whom, TypeScript vs JavaScript), `docs/MODULES_AND_LIBRARIES.md`,
+  `docs/FILE_TYPES.md`, `assets/skins/README.md` (manifest reference).
+- C++ particle system, C foreground-window API, Rust RAII wrapper, `apps` quirk.
 - Java reminder service, C Win32 module, C# companion (tray,
   notifications, voice), Rust/Tauri shell with process supervisor.
 - `docs/SECURITY.md`: threat model, defenses, security review.

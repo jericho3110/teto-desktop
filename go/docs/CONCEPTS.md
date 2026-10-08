@@ -329,20 +329,23 @@ supports on Windows (gcc/MinGW); it's not part of the default checks.
 
 ## References
 
-**Language**
+### Language
+
 - The Go Programming Language Specification: <https://go.dev/ref/spec>
 - Effective Go: <https://go.dev/doc/effective_go>
 - Go Tour, concurrency: <https://go.dev/tour/concurrency/1>
 - Go blog, *Share Memory By Communicating*: <https://go.dev/blog/codelab-share>
 - Go blog, *Working with Errors in Go 1.13* (`%w`, `errors.Is`): <https://go.dev/blog/go1.13-errors>
 
-**Standard library**
+### Standard library
+
 - `net/http` patterns (Go 1.22): <https://pkg.go.dev/net/http#hdr-Patterns-ServeMux>
 - `os/exec` and the current-directory lookup change ✔ (security section): <https://pkg.go.dev/os/exec#hdr-Executables_in_the_current_directory>
 - `bufio.Scanner.Buffer`: <https://pkg.go.dev/bufio#Scanner.Buffer>
 - `crypto/subtle`: <https://pkg.go.dev/crypto/subtle>
 - `testing`: <https://pkg.go.dev/testing>
 
-**Other explanations**
+### Other explanations
+
 - Go by Example: <https://gobyexample.com/>
 - Dave Cheney, *Practical Go*: <https://dave.cheney.net/practical-go/presentations/qcon-china.html>

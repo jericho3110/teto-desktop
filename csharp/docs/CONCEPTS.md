@@ -222,7 +222,8 @@ text: code blocks become "(code)" and URLs become "(link)".
 
 ## References
 
-**Official**
+### Official
+
 - C# language docs: <https://learn.microsoft.com/en-us/dotnet/csharp/>
 - Records: <https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/builtin-types/record>
 - Nullable reference types: <https://learn.microsoft.com/en-us/dotnet/csharp/nullable-references>
@@ -237,5 +238,6 @@ text: code blocks become "(code)" and URLs become "(link)".
 - `SpeechSynthesizer`: <https://learn.microsoft.com/en-us/dotnet/api/system.speech.synthesis.speechsynthesizer>
 - xUnit getting started: <https://xunit.net/docs/getting-started/v2/netcore/cmdline>
 
-**Other**
+### Other
+
 - Stephen Cleary, *Async and Await*: <https://blog.stephencleary.com/2012/02/async-and-await.html>

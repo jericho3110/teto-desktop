@@ -87,12 +87,12 @@ anywhere. `/remind 10m stretch` sets a reminder. Claude works in
 | --- | --- | --- |
 | `go/brain` | `go vet ./... ; go test -count=1 ./...` | 11, incl. permission round trip with a fake Claude, 7 security regressions |
 | `python/` | `python -m unittest discover -s python/mood` | 5 |
-| `cpp/physics` | `npm run build ; npm test` | 6, on the real `.wasm` |
+| `cpp/physics` | `npm run build ; npm test` | 14 on the real `.wasm`: hair physics + particle memory (pool, free list, zero-copy views) |
 | `typescript/ui` | `npm run typecheck ; npm test` | 9, incl. skin sanitizer |
 | `java/reminders` | see [java/README.md](java/README.md) | 19 checks, incl. forged requests |
-| `c/win32hooks` | see [c/README.md](c/README.md) | 7 |
+| `c/win32hooks` | see [c/README.md](c/README.md) | 12, incl. a 20,000-cycle leak check |
 | `csharp/` | `dotnet test Teto.slnx` | 13, incl. a real pipe round trip |
-| `rust/shell` | `cargo test` | FFI + supervisor |
+| `rust/shell` | `cargo test` (set `CARGO_TARGET_DIR` first, see rust/README) | 5: FFI, RAII wrapper, supervisor |
 | live | `python python/tools/smoke_brain.py --token devtoken "Say hi"` | real Claude through a running brain |
 
 ## Docs
@@ -100,12 +100,18 @@ anywhere. `/remind 10m stretch` sets a reminder. Claude works in
 | Doc | For |
 | --- | --- |
 | [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) | the whole system: why it's built this way, one prompt end to end |
+| [docs/LANGUAGES.md](docs/LANGUAGES.md) | each language's strengths and weaknesses, who covers for whom, TypeScript vs JavaScript |
+| [docs/MEMORY.md](docs/MEMORY.md) | stack/heap, C/C++/Rust memory management applied, GC languages, other memory-safe languages |
+| [docs/PARADIGMS.md](docs/PARADIGMS.md) | procedural, the four OOP pillars, functional, data-oriented, event-driven: where and why |
+| [docs/MODULES_AND_LIBRARIES.md](docs/MODULES_AND_LIBRARIES.md) | modules, packages, headers, standard libraries, package managers in every language |
+| [docs/FILE_TYPES.md](docs/FILE_TYPES.md) | every file type in the repo (`.json`, `.toml`, `.gitattributes`, `.slnx`, `.class`, …) |
 | [docs/SECURITY.md](docs/SECURITY.md) | threat model, defenses, security review, safe use |
 | [docs/PROTOCOL.md](docs/PROTOCOL.md) | every message between the parts |
 | [docs/LEARNING_PATH.md](docs/LEARNING_PATH.md) | a reading order through all nine languages, with exercises |
 | [docs/LIBRARIES_AND_BUILTINS.md](docs/LIBRARIES_AND_BUILTINS.md) | every dependency and standard-library module, and why |
 | [docs/CONVENTIONS.md](docs/CONVENTIONS.md) | layout, naming, commits |
 | `<language>/docs/CONCEPTS.md` | the language deep-dives |
+| [assets/skins/README.md](assets/skins/README.md) | the skin format, `manifest.json` field by field |
 | [CHANGELOG.md](CHANGELOG.md) | workspace changes |
 
 ## Art & credits
