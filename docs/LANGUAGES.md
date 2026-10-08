@@ -18,9 +18,10 @@ that map. The details of each language are in `<language>/docs/CONCEPTS.md`.
 10. [Why TypeScript here and JavaScript there?](#why-typescript-here-and-javascript-there)
 11. [Concurrency: each language's model](#concurrency-each-languages-model)
 12. [How effective was each language here?](#how-effective-was-each-language-here)
-13. [Who covers for whom](#who-covers-for-whom)
-14. [Exercises](#exercises)
-15. [References](#references)
+13. [Could Teto be built with only 1 or 2 languages?](#could-teto-be-built-with-only-1-or-2-languages)
+14. [Who covers for whom](#who-covers-for-whom)
+15. [Exercises](#exercises)
+16. [References](#references)
 
 ## The map at a glance
 
@@ -217,6 +218,34 @@ Lines are non-blank lines tracked in git (October 2026).
 - **If you rebuilt Teto in fewer languages**, the natural merges are Java →
   Go (one less runtime, -32 MB) and the C# companion → Rust/Tauri (Tauri has
   a tray API), keeping C, C++/wasm, TypeScript and Python where they shine.
+
+## Could Teto be built with only 1 or 2 languages?
+
+**Yes, and for a real product that would be the better choice.** Teto
+uses nine languages *on purpose*, to learn how languages cooperate. That
+choice made the project more complex than it needs to be. Honestly:
+
+| Design | How each job would be done | Gains | Losses |
+| --- | --- | --- | --- |
+| **2 languages: Rust + TypeScript** (Tauri) | TS: the UI (as now). Rust: window, brain (spawn Claude, stream JSON), Win32 calls via the `windows` crate, tray, reminders (a file + timer), mood (a small function), audio playback, physics (or keep it in TS) | one build system for native code, **no localhost HTTP server or token** (Tauri IPC is enough), no Java/.NET/Python runtimes, an installer around 10 MB | Rust is the hardest language here; Go's easy concurrency and C#'s ready-made Windows UI pieces would be rewritten in Rust |
+| **1 language: TypeScript/JavaScript** (Electron) | everything in Node/Electron: `child_process` for Claude, `globalShortcut`, `screen.getCursorScreenPoint()`, `powerMonitor.getSystemIdleTime()`, tray, notifications, Web Audio for the voice, physics in JS | simplest by far: one language, one toolchain, one process model | a ~150 MB app that bundles Chromium; more memory; no native-code learning |
+| **1 language: C#** (WPF + WebView2 or pure WPF) | .NET does window, tray, voice, processes, Win32 (P/Invoke), HTTP | one runtime, Microsoft-native | Windows-only forever; WPF animation instead of the web stack |
+| **9 languages** (what we built) | each job in its "best" language | a guided tour of nine ecosystems, six ways to connect them, and their memory models | three runtimes to ship (Java, .NET, Python); six IPC protocols to secure; the hardest problems were toolchains (Smart App Control, OneDrive, encodings, packaging), not features |
+
+**Would it run faster with fewer languages?** Not noticeably. Teto spends
+almost all its time waiting for Claude; the animation is a few hundred
+math operations per frame. The real costs of the polyglot design are
+**development time** (each language has its own build, tests, packaging
+and gotchas), **download size** (the bundled Java runtime is 32 MB unpacked, the
+largest part of the 21 MB installer) and **attack surface** (every process boundary
+is something to authenticate: the token, Host checks and pipe ACLs exist
+*because* the parts are separate processes).
+
+**Rule of thumb for real projects:** use as few languages as you can, and
+add one only when it does something the others can't (here: C for the
+Win32 boundary, WebAssembly for sandboxed speed, TypeScript because
+webviews only run JavaScript). A good engineer can explain each extra
+language's cost; this repo is a place to *see* those costs up close.
 
 ## Who covers for whom
 
