@@ -110,6 +110,12 @@ cancellation, `IDisposable`, UI-thread marshalling, named-pipe security.
 **Exercise:** add a `mute` command end to end (Go sends it, C# handles it).
 **Self-check:** why does `Handle` run via `SynchronizationContext.Post`?
 
+## Stage 12b: how she moves and speaks
+
+**Read:** [ANIMATION.md](ANIMATION.md) (eye tracking math, smoothing, sine waves, the face state machine), then [VOICE.md](VOICE.md).
+**Exercise:** make her blink twice in a row sometimes (a "double blink"); make babble pitch rise at the end of questions.
+**Self-check:** why do the breathing, sway and ahoge periods use unrelated numbers?
+
 ## Stage 13: thinking like an attacker
 
 **Read:** [SECURITY.md](SECURITY.md), especially the review table.

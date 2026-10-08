@@ -45,7 +45,7 @@
 ## Checks before committing
 
 ```text
-python python/tools/check_all.py        # every language; exit code 0 = all passed
+python main.py test        # every language + links + security; exit code 0 = all passed
 ```
 
 It runs `gofmt`/`go vet`/`go test`, the Python tests, the C++ build +

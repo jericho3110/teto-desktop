@@ -48,38 +48,54 @@ with where and why**), and `CHANGELOG.md`.
 
 Details: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
 
-## Setup (Windows 11)
+## Just want to use Teto?
+
+1. Install [Claude Code](https://code.claude.com/docs/en/overview) and log in.
+2. Download `Teto_<version>_x64-setup.exe` from this repo's **Releases** page and run it
+   (per-user install, no admin rights; Windows SmartScreen may warn because the
+   installer isn't code-signed).
+3. Optional: the [.NET 10 Desktop Runtime](https://dotnet.microsoft.com/download/dotnet/10.0)
+   for the tray icon and voice, and Python for moods.
+4. Optional, her real voice: download the free official voicebank yourself (its
+   licence forbids bundling it): see [docs/VOICE.md](docs/VOICE.md).
+
+Windows 10/11 only for now; [docs/PACKAGING.md](docs/PACKAGING.md#cross-platform-what-would-it-take)
+explains what a macOS/Linux port would take.
+
+## Developing: one command for everything
+
+```powershell
+python main.py doctor     # which toolchains are installed (and how to get the missing ones)
+python main.py build      # build every helper (Go, C++/wasm, Java, C#, UI)
+python main.py run        # build, then start Teto
+python main.py test       # every language's checks + links + security scan
+python main.py voice      # download Teto's voicebank (shows the terms, asks first)
+python main.py package    # build the Windows installer into dist/
+```
+
+Toolchains (once):
 
 ```powershell
 winget install GoLang.Go LLVM.LLVM Microsoft.DotNet.SDK.10 EclipseAdoptium.Temurin.25.JDK
 winget install Microsoft.VisualStudio.BuildTools --override "--quiet --wait --add Microsoft.VisualStudio.Workload.VCTools --includeRecommended"
 # plus: Rust (https://rustup.rs), Node 22.18+, Python 3.10+, Claude Code (logged in)
 cargo install tauri-cli --version "^2" --locked
+cargo install cargo-audit --locked
 ```
 
 > **Smart App Control** (Windows 11) blocks Cargo's build scripts, so Rust
 > can't build while it's on. See [docs/SECURITY.md](docs/SECURITY.md#developer-notes).
+> Keep the repo out of OneDrive-synced build folders: the runner already
+> puts Rust and packaging output in `%LOCALAPPDATA%\Teto`.
 
-Build everything once:
-
-```powershell
-cd go/brain;          go build -o bin/teto-brain.exe .;                  cd ../..
-cd cpp/physics;       npm run build;                                      cd ../..
-cd java/reminders;    javac -Xlint:all -Werror -d out src/teto/reminders/*.java; cd ../..
-cd csharp;            dotnet build Companion -c Release;                  cd ..
-cd typescript/ui;     npm install;                                        cd ../..
-```
-
-## Run
-
-```powershell
-cd rust/shell
-cargo tauri dev        # starts Vite, builds the shell, opens Teto; the shell starts every helper
-```
+## Using her
 
 Click Teto (or press **Ctrl+Alt+Space**) to open the command bar. Drag her
-anywhere. `/remind 10m stretch` sets a reminder. Claude works in
-`~/TetoWorkspace`. Helper logs: `%LOCALAPPDATA%\Teto\logs`.
+anywhere (watch the drills swing). `/remind 10m stretch` sets a reminder.
+Every action Claude wants to take shows up as an **Allow / Deny** card with
+the full command. Claude works in `~/TetoWorkspace`. Right-click the tray
+icon for **Voice → Teto / Windows voice / Off**. Helper logs:
+`%LOCALAPPDATA%\Teto\logs`.
 
 ## Tests
 
@@ -91,8 +107,10 @@ anywhere. `/remind 10m stretch` sets a reminder. Claude works in
 | `typescript/ui` | `npm run typecheck ; npm test` | 9, incl. skin sanitizer |
 | `java/reminders` | see [java/README.md](java/README.md) | 19 checks, incl. forged requests |
 | `c/win32hooks` | see [c/README.md](c/README.md) | 12, incl. a 20,000-cycle leak check |
-| `csharp/` | `dotnet test Teto.slnx` | 13, incl. a real pipe round trip |
-| `rust/shell` | `cargo test` (set `CARGO_TARGET_DIR` first, see rust/README) | 5: FFI, RAII wrapper, supervisor |
+| `csharp/` | `dotnet test Teto.slnx` | 33: pipe, message parsing, voice (WAV/oto.ini parsing, path traversal, babble) |
+| `rust/shell` | `cargo test` (set `CARGO_TARGET_DIR` first, see rust/README) | 6: FFI, RAII wrapper, supervisor layouts |
+| `python/tools` | `python -m unittest discover -s python/tools` | 4: safe zip extraction (zip slip, Shift-JIS names) |
+| security | `python main.py test security` | npm/NuGet/Go/Rust vulnerability scanners + RCE pattern sweep + invariants |
 | live | `python python/tools/smoke_brain.py --token devtoken "Say hi"` | real Claude through a running brain |
 
 ## Docs
@@ -100,6 +118,10 @@ anywhere. `/remind 10m stretch` sets a reminder. Claude works in
 | Doc | For |
 | --- | --- |
 | [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) | the whole system: why it's built this way, one prompt end to end |
+| [docs/ANIMATION.md](docs/ANIMATION.md) | how she moves: eye tracking math, blinking, talking, smoothing, physics, particles |
+| [docs/VOICE.md](docs/VOICE.md) | her voice: the voicebank, its licence, how text becomes audio |
+| [docs/PACKAGING.md](docs/PACKAGING.md) | the runner, the installer, sidecars, jlink, cross-platform |
+| [docs/GLOSSARY.md](docs/GLOSSARY.md) | every concept in one table, linked to where it's explained |
 | [docs/LANGUAGES.md](docs/LANGUAGES.md) | each language's strengths and weaknesses, who covers for whom, TypeScript vs JavaScript |
 | [docs/MEMORY.md](docs/MEMORY.md) | stack/heap, C/C++/Rust memory management applied, GC languages, other memory-safe languages |
 | [docs/PARADIGMS.md](docs/PARADIGMS.md) | procedural, the four OOP pillars, functional, data-oriented, event-driven: where and why |

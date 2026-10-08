@@ -69,6 +69,10 @@ in many transitive crates; that is the price of a cross-platform webview shell.
 | `argparse`, `threading`, `urllib.request` | `tools/smoke_brain.py` | CLI, background SSE reader, HTTP |
 | `concurrent.futures`, `urllib.error` | `tools/check_links.py` | parallel link checks |
 | `os`, `shutil`, `time` | `tools/check_all.py` | env/PATH, `which`, timing |
+| `runpy` | `main.py` | run `runner.py` as `__main__` |
+| `argparse` (sub-commands), `tempfile`, `urllib.request`, `zipfile`, `json` | `tools/runner.py` | the runner: commands, downloads, safe zip extraction, generated config |
+| `winreg` | `tools/runner.py: smart_app_control` | read a Windows registry value (Windows-only module) |
+| `re`, `json`, `subprocess` | `tools/security_scan.py` | pattern sweep, scanner output parsing |
 | `__future__` | several | postponed annotations |
 
 ## TypeScript / browser / Node APIs
@@ -134,7 +138,11 @@ core language and one clang attribute (`export_name`). See
 | `System.IO.Pipes` | `PipeListener.cs`, tests | named-pipe server/client |
 | `System.Text.Json` | `Commands.cs` | defensive JSON parsing |
 | `System.Text.RegularExpressions` | `Commands.cs` | source-generated regexes |
-| `System.Speech.Synthesis` (package) | `TrayApp.cs` | voice |
+| `System.Speech.Synthesis` (package) | `TrayApp.cs` | Windows voice |
+| `System.Media.SoundPlayer` | `TrayApp.cs` | play Teto's rendered WAV |
+| `System.Buffers.Binary.BinaryPrimitives` | `Voice/Wav.cs` | little-endian reads/writes for WAV |
+| `System.Text.CodePagesEncodingProvider` | `Voice/OtoIni.cs` | Shift-JIS (code page 932) |
+| `System.Globalization.CultureInfo` | `Voice/OtoIni.cs` | culture-independent number parsing |
 | `System.Windows.Forms` (implicit) | `TrayApp.cs`, `Program.cs` | `NotifyIcon`, menus, message loop |
 | `System.Threading` (implicit) | all | `Mutex`, `SynchronizationContext`, `CancellationToken`, `Task` |
 

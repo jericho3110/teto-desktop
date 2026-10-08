@@ -13,6 +13,10 @@ Workspace-level changes. Each language folder has its own
   `assets/` and workspace docs in `docs/`.
 
 ### Added
+- Teto's voice from her official voicebank (C#), `docs/VOICE.md`.
+- `main.py` runner and a Windows installer (`python main.py package`), `docs/PACKAGING.md`.
+- Security scan on every change (`python main.py test security`), RCE review in `docs/SECURITY.md`.
+- `docs/ANIMATION.md` (eye tracking, smoothing, oscillation, faces) and `docs/GLOSSARY.md`.
 - New guides: `docs/MEMORY.md` (C/C++/Rust/GC memory management and other
   memory-safe languages), `docs/PARADIGMS.md` (procedural, OOP pillars,
   functional, data-oriented…), `docs/LANGUAGES.md` (strengths, weaknesses,

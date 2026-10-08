@@ -109,6 +109,11 @@ the query string for `/events` only.
 **Why form-encoded to Java?** The JDK can write JSON easily but has no JSON
 parser; it *can* decode forms. Each side uses what the other finds easy.
 
+## Voice and packaging
+
+- **Voice:** the C# companion renders Teto's real UTAU voicebank (downloaded by the user, never bundled) into babble audio; see [VOICE.md](VOICE.md).
+- **Packaging:** `python main.py package` builds every language into one NSIS installer with sidecars, resources and a jlink Java runtime; see [PACKAGING.md](PACKAGING.md).
+
 ## Startup and shutdown
 
 1. `cargo tauri dev` starts Vite (the UI) and the Rust shell.
