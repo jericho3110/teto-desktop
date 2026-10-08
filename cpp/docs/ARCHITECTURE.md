@@ -130,12 +130,14 @@ cd cpp/physics; npm run build; npm test
 
 ## References
 
-**Model and integration**
+### Model and integration
+
 - Glenn Fiedler, *Integration Basics* (why explicit Euler blows up): <https://gafferongames.com/post/integration_basics/>
 - Wikipedia, *Semi-implicit Euler method*: <https://en.wikipedia.org/wiki/Semi-implicit_Euler_method>
 - Wikipedia, *Featherstone's algorithm*: <https://en.wikipedia.org/wiki/Featherstone%27s_algorithm>
 
-**WebAssembly toolchain**
+### WebAssembly toolchain
+
 - Clang attributes, `export_name` ✔ (used and verified by the "exports only what we declared" test): <https://clang.llvm.org/docs/AttributeReference.html#export-name>
 - LLVM `wasm-ld` (`--no-entry`, `--strip-all`): <https://lld.llvm.org/WebAssembly.html>
 - MDN, `WebAssembly.instantiateStreaming` ✔ (needs `application/wasm`): <https://developer.mozilla.org/en-US/docs/WebAssembly/Reference/JavaScript_interface/instantiateStreaming_static>

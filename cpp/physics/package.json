@@ -6,7 +6,7 @@
   "type": "module",
   "scripts": {
     "prebuild": "node -e \"require('node:fs').mkdirSync('dist', {recursive: true})\"",
-    "build": "clang++ --target=wasm32 -O2 -std=c++20 -nostdlib -fno-exceptions -fno-rtti -Wall -Wextra -Werror -Wl,--no-entry -Wl,--strip-all -o dist/physics.wasm src/exports.cpp",
+    "build": "clang++ --target=wasm32 -O2 -std=c++20 -nostdlib -fno-exceptions -fno-rtti -Wall -Wextra -Werror -Wl,--no-entry -Wl,--strip-all -o dist/physics.wasm src/exports.cpp src/particles.cpp",
     "test": "node --test \"test/**/*.test.mjs\""
   }
 }

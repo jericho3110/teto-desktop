@@ -35,6 +35,12 @@ struct IdleEvent {
     ms: u32,
 }
 
+/// Only the program name, never the window title (data minimization).
+#[derive(Clone, Serialize)]
+struct AppEvent {
+    app: String,
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     // First, before any child exists: children join our job object and
@@ -92,6 +98,7 @@ fn spawn_native_pollers(app: AppHandle) {
     std::thread::spawn(move || {
         let mut last_cursor: Option<CursorEvent> = None;
         let mut last_idle = Instant::now() - Duration::from_secs(60);
+        let mut last_app = String::new();
         loop {
             std::thread::sleep(Duration::from_millis(33));
             let Some(win) = app.get_webview_window("main") else {
@@ -120,6 +127,16 @@ fn spawn_native_pollers(app: AppHandle) {
                         ms: native::idle_ms(),
                     },
                 );
+                // `fg` owns a C allocation; it's freed at the end of this
+                // block by Drop. `name` copies the borrowed &str into an
+                // owned String first, because `fg` won't outlive the block.
+                if let Some(fg) = native::ForegroundWindow::now() {
+                    let name = fg.app().to_owned();
+                    if !name.is_empty() && name != last_app && name != "teto-shell.exe" {
+                        last_app = name.clone();
+                        let _ = app.emit("native://app", AppEvent { app: name });
+                    }
+                }
             }
         }
     });

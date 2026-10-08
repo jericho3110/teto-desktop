@@ -4,15 +4,24 @@
 //! gets a small safe Rust function. All `unsafe` lives in this file, next
 //! to a comment saying why it is sound.
 
-use std::ffi::c_void;
+use std::ffi::{c_void, CStr};
+use std::ptr::NonNull;
 use std::sync::Mutex;
 
 mod ffi {
-    use std::ffi::c_void;
+    use std::ffi::{c_char, c_void};
 
     // Must match c/win32hooks/include/teto_win32.h exactly: the compiler
     // can't check this, which is why calling these is `unsafe`.
     pub type HotkeyCb = extern "C" fn(user: *mut c_void);
+
+    /// C's opaque `teto_window_info`. Rust never sees its fields: a
+    /// zero-sized private array makes it impossible to construct or copy
+    /// from Rust, the pattern the Rustonomicon recommends for opaque types.
+    #[repr(C)]
+    pub struct WindowInfo {
+        _private: [u8; 0],
+    }
 
     extern "C" {
         pub fn teto_idle_ms() -> u32;
@@ -20,6 +29,10 @@ mod ffi {
         pub fn teto_hotkey_start(modifiers: u32, vk: u32, cb: HotkeyCb, user: *mut c_void) -> i32;
         pub fn teto_hotkey_stop();
         pub fn teto_kill_children_on_exit() -> i32;
+        pub fn teto_foreground_window() -> *mut WindowInfo;
+        pub fn teto_window_app(info: *const WindowInfo) -> *const c_char;
+        pub fn teto_window_title(info: *const WindowInfo) -> *const c_char;
+        pub fn teto_window_info_free(info: *mut WindowInfo);
     }
 }
 
@@ -47,6 +60,61 @@ pub fn kill_children_on_exit() -> bool {
     // SAFETY: no arguments; the job handle is owned by the C side for the
     // lifetime of the process (intentionally never closed).
     unsafe { ffi::teto_kill_children_on_exit() == 1 }
+}
+
+/// A snapshot of the foreground window that OWNS the C allocation.
+///
+/// RAII: the C memory is freed exactly once, in `Drop`, when this value
+/// goes out of scope. There's no `Clone` on purpose: two owners of one C
+/// pointer would free it twice.
+pub struct ForegroundWindow {
+    ptr: NonNull<ffi::WindowInfo>, // non-null by construction: no null checks later
+}
+
+impl ForegroundWindow {
+    /// `None` if no window has focus (or C ran out of memory).
+    pub fn now() -> Option<Self> {
+        // SAFETY: no arguments; C returns either NULL or a pointer we now own.
+        let raw = unsafe { ffi::teto_foreground_window() };
+        NonNull::new(raw).map(|ptr| Self { ptr })
+    }
+
+    /// The program's file name, e.g. `Code.exe`.
+    ///
+    /// The `&str` *borrows* from `self` (lifetime elision ties them), so
+    /// the compiler rejects any use of it after the snapshot is dropped:
+    /// C's "don't use the string after free" rule, enforced at compile time.
+    pub fn app(&self) -> &str {
+        // SAFETY: `ptr` is live (we own it); C returns a NUL-terminated
+        // string owned by the snapshot, valid until teto_window_info_free.
+        unsafe { borrow_c_str(ffi::teto_window_app(self.ptr.as_ptr())) }
+    }
+
+    /// The window title. Deliberately never sent to the UI (titles can be
+    /// private); kept for learning and tests.
+    #[cfg_attr(not(test), allow(dead_code))]
+    pub fn title(&self) -> &str {
+        // SAFETY: as in `app`.
+        unsafe { borrow_c_str(ffi::teto_window_title(self.ptr.as_ptr())) }
+    }
+}
+
+impl Drop for ForegroundWindow {
+    fn drop(&mut self) {
+        // SAFETY: we own `ptr` and this is the only place that frees it;
+        // Drop runs exactly once per value.
+        unsafe { ffi::teto_window_info_free(self.ptr.as_ptr()) }
+    }
+}
+
+/// # Safety
+/// `p` must be NULL or a NUL-terminated string that outlives `'a`.
+unsafe fn borrow_c_str<'a>(p: *const std::ffi::c_char) -> &'a str {
+    if p.is_null() {
+        return "";
+    }
+    // SAFETY: guaranteed by the caller (see above). Invalid UTF-8 → "".
+    unsafe { CStr::from_ptr(p) }.to_str().unwrap_or("")
 }
 
 /// A callback that can be shared with another thread (`Send + Sync`).
@@ -103,6 +171,18 @@ mod tests {
     fn cursor_and_idle_work_through_ffi() {
         assert!(cursor_pos().is_some());
         assert!(idle_ms() < 30 * 24 * 3600 * 1000);
+    }
+
+    #[test]
+    fn foreground_window_owns_and_frees_its_memory() {
+        // Drop frees each snapshot; 5000 rounds would leak visibly if not.
+        for _ in 0..5000 {
+            if let Some(w) = ForegroundWindow::now() {
+                let (app, title) = (w.app(), w.title());
+                assert!(app.is_empty() || app.to_ascii_lowercase().ends_with(".exe"));
+                let _ = title;
+            } // <- `w` dropped here: teto_window_info_free runs
+        }
     }
 
     #[test]

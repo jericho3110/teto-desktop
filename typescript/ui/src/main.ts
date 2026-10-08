@@ -7,7 +7,8 @@ import { Animator } from "./animator";
 import { Brain } from "./brain";
 import { Bubble } from "./bubble";
 import { CommandBar } from "./commandbar";
-import { HairPhysics } from "./physics";
+import { FxLayer } from "./fxlayer";
+import { Effects, HairPhysics, loadPhysics } from "./physics";
 import { Quirks } from "./quirks";
 import { Skin } from "./skin";
 import type { BrainEvent } from "./types";
@@ -27,11 +28,14 @@ async function main() {
   const cfg = await loadConfig();
   const stage = document.querySelector<HTMLElement>("#character")!;
   const skin = await Skin.load(`/skins/${cfg.skin}`, stage);
-  const physics = await HairPhysics.load("/physics.wasm", skin.manifest.chains, skin.manifest.physics).catch((err) => {
-    console.warn("hair physics unavailable", err);
+  // One wasm instance (C++) serves both the hair and the particle effects.
+  const wasm = await loadPhysics("/physics.wasm").catch((err) => {
+    console.warn("physics.wasm unavailable: still hair, no particles", err);
     return null;
   });
-  const animator = new Animator(skin, physics, stage);
+  const physics = wasm ? new HairPhysics(wasm, skin.manifest.chains, skin.manifest.physics) : null;
+  const fx = wasm ? new FxLayer(document.querySelector<HTMLCanvasElement>("#fx")!, new Effects(wasm)) : null;
+  const animator = new Animator(skin, physics, stage, fx);
   animator.start();
 
   const bubble = new Bubble(document.querySelector("#bubble")!);
@@ -162,6 +166,10 @@ async function main() {
         quirks.emit("wake");
       }
     });
+
+    // The program you switched to (only its name: the C/Rust side never
+    // sends window titles). Quirks decide whether to comment on it.
+    await listen<{ app: string }>("native://app", ({ payload }) => quirks.emit("app", payload.app));
 
     await listen("native://hotkey", () => {
       animator.sleep(false);

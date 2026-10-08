@@ -13,7 +13,11 @@ const angles = (chain, n) => Array.from({ length: n }, (_, j) => p.phys_angle(ch
 const run = (frames, ax = 0) => { for (let i = 0; i < frames; i++) p.phys_step_chain(0, 1 / 60, ax, 0, 900); };
 
 test("exports only what we declared", () => {
-  assert.deepEqual(Object.keys(p).sort(), ["memory", "phys_angle", "phys_impulse", "phys_init", "phys_step_chain"]);
+  assert.deepEqual(Object.keys(p).sort(), [
+    "fx_alive", "fx_arena_used", "fx_burst", "fx_capacity", "fx_field", "fx_init", "fx_step", "fx_stream",
+    "memory", "phys_angle", "phys_impulse", "phys_init", "phys_step_chain",
+  ]);
+  assert.equal(WebAssembly.Module.imports(new WebAssembly.Module(bytes)).length, 0, "imports nothing");
 });
 
 test("init clamps the chain count", () => {

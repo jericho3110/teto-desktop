@@ -23,6 +23,7 @@ FFI bridge to C, and the process supervisor.
 16. [Tooling: cargo fmt, clippy, test](#16-tooling-cargo-fmt-clippy-test)
 17. [Principles applied](#17-principles-applied)
 18. [Exercises](#18-exercises)
+- [RAII over C memory: ForegroundWindow](#raii-over-c-memory-foregroundwindow)
 19. [References](#references)
 
 ## 1. Crates, modules and Cargo
@@ -224,9 +225,28 @@ redundant closure.
 3. Self-check: what would go wrong if `hotkey_stop` set `*slot = None` *before*
    calling `teto_hotkey_stop()`?
 
+## RAII over C memory: ForegroundWindow
+
+`native.rs: ForegroundWindow` owns a heap object allocated by C and shows
+Rust's memory rules guarding someone else's memory (more in
+[docs/MEMORY.md](../../docs/MEMORY.md#rust-ownership-borrowing-lifetimes)):
+
+| Concept | Code |
+| --- | --- |
+| opaque FFI type | `#[repr(C)] pub struct WindowInfo { _private: [u8; 0] }` |
+| `NonNull<T>`: a raw pointer that can't be null | `NonNull::new(raw).map(\|ptr\| Self { ptr })`, null becomes `None` |
+| `Drop` = RAII | `impl Drop for ForegroundWindow` calls `teto_window_info_free` exactly once |
+| no `Clone` | two owners would double-free |
+| lifetime elision ties a borrow to its owner | `fn app(&self) -> &str`: can't outlive the snapshot |
+| an `unsafe fn` with a `# Safety` contract | `borrow_c_str` |
+| `CStr::from_ptr(..).to_str()` | C string → `&str`, invalid UTF-8 becomes `""` |
+| borrowed → owned | `fg.app().to_owned()` before `fg` is dropped |
+| `#[cfg_attr(not(test), allow(dead_code))]` | `title()` exists for tests/learning, never sent to the UI |
+
 ## References
 
-**Official**
+### Official
+
 - The Rust Programming Language (the Book): <https://doc.rust-lang.org/book/>
 - Ownership: <https://doc.rust-lang.org/book/ch04-00-understanding-ownership.html>
 - The Rustonomicon, FFI: <https://doc.rust-lang.org/nomicon/ffi.html>
@@ -238,5 +258,6 @@ redundant closure.
 - Tauri, CSP: <https://v2.tauri.app/security/csp/>
 - `cc` crate: <https://docs.rs/cc/>
 
-**Other**
+### Other
+
 - Rust by Example: <https://doc.rust-lang.org/rust-by-example/>

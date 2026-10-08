@@ -4,7 +4,8 @@
 // adding a quirk needs no rebuild of the TypeScript.
 import type { Emotion } from "./types";
 
-export type QuirkEvent = "start" | "poke" | "reply" | "mood" | "sleep" | "wake" | "tick";
+/** "app": the foreground program changed; data = its file name, e.g. "Code.exe". */
+export type QuirkEvent = "start" | "poke" | "reply" | "mood" | "sleep" | "wake" | "tick" | "app";
 
 export interface QuirkAPI {
   on(event: QuirkEvent, fn: (data?: unknown) => void): void;

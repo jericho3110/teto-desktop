@@ -10,7 +10,9 @@
  */
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
+#include <psapi.h> /* GetProcessMemoryInfo, for the leak check */
 #include <stdio.h>
+#include <string.h>
 
 #include "teto_win32.h"
 
@@ -75,6 +77,37 @@ int main(void) {
     }
     CHECK(teto_hotkey_start(0, VK_F9, NULL, NULL) == 0, "NULL callback refused");
     CloseHandle(fired);
+
+    /* foreground window: ownership + a leak check */
+    {
+        teto_window_info *info = teto_foreground_window();
+        PROCESS_MEMORY_COUNTERS_EX before, after;
+        SIZE_T growth;
+        int i;
+        if (info != NULL) {
+            const char *app = teto_window_app(info);
+            size_t n = strlen(app);
+            CHECK(teto_window_title(info) != NULL, "title is never NULL");
+            CHECK(n == 0 || (n > 4 && _stricmp(app + n - 4, ".exe") == 0), "app is an .exe name (or empty)");
+            teto_window_info_free(info);
+        } else {
+            printf("SKIPPED: no foreground window (non-interactive session)\n");
+        }
+        CHECK(strcmp(teto_window_app(NULL), "") == 0, "getters accept NULL");
+        teto_window_info_free(NULL); /* must not crash */
+        g_passed++;
+
+        /* Allocate and free 20,000 snapshots. If anything leaked even one
+         * small string per call, private memory would grow by megabytes. */
+        GetProcessMemoryInfo(GetCurrentProcess(), (PROCESS_MEMORY_COUNTERS *)&before, sizeof before);
+        for (i = 0; i < 20000; i++) {
+            teto_window_info_free(teto_foreground_window());
+        }
+        GetProcessMemoryInfo(GetCurrentProcess(), (PROCESS_MEMORY_COUNTERS *)&after, sizeof after);
+        growth = after.PrivateUsage > before.PrivateUsage ? after.PrivateUsage - before.PrivateUsage : 0;
+        printf("leak check: private memory grew %lu KB over 20000 alloc/free cycles\n", (unsigned long)(growth / 1024));
+        CHECK(growth < 512 * 1024, "no leak: < 512 KB growth over 20000 cycles");
+    }
 
     /* job object: last, because it changes this process for good */
     CHECK(teto_kill_children_on_exit() == 1, "job object created and assigned");

@@ -21,6 +21,7 @@ change the other and this file.
 | Rust → UI (event) | `native://cursor` | `{"x": 120.5, "y": 300}`: cursor in window CSS pixels, sent ~30×/s only when it moved |
 | Rust → UI (event) | `native://idle` | `{"ms": 4200}`: time since the last keyboard/mouse input, every 2 s |
 | Rust → UI (event) | `native://hotkey` | none: Ctrl+Alt+Space was pressed |
+| Rust → UI (event) | `native://app` | `{"app": "Code.exe"}`: the foreground program changed (checked every 2 s). Only the program name; window titles are never sent |
 
 The UI also calls Tauri's window API directly (allowed by
 `rust/shell/capabilities/default.json`): `startDragging`, `setFocus`,
@@ -164,17 +165,20 @@ characters, titles to 64.
 
 ## References
 
-**HTTP / SSE**
+### HTTP / SSE
+
 - HTML Standard, Server-sent events (`data:` lines, blank-line separator, comments starting with `:`) ✔: <https://html.spec.whatwg.org/multipage/server-sent-events.html>
 - RFC 6750, Bearer token usage: <https://www.rfc-editor.org/rfc/rfc6750>
 - Go `net/http` routing patterns (`"POST /prompt"`, Go 1.22+): <https://pkg.go.dev/net/http#hdr-Patterns-ServeMux>
 
-**Claude Code**
+### Claude Code
+
 - Run Claude Code programmatically ✔: <https://code.claude.com/docs/en/headless>
 - CLI reference: <https://code.claude.com/docs/en/cli-reference>
 - Agent SDK, handling permissions / user input: <https://code.claude.com/docs/en/agent-sdk/user-input>
 
-**Others**
+### Others
+
 - Python `-u` (unbuffered output): <https://docs.python.org/3/using/cmdline.html#cmdoption-u>
 - HTML, `application/x-www-form-urlencoded`: <https://url.spec.whatwg.org/#application/x-www-form-urlencoded>
 - Microsoft, Named pipe names (`\\.\pipe\name`): <https://learn.microsoft.com/en-us/windows/win32/ipc/pipe-names>

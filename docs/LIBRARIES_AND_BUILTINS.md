@@ -96,13 +96,17 @@ core language and one clang attribute (`export_name`). See
 | --- | --- | --- |
 | `<stdint.h>` | `teto_win32.h` | exact-width integers at the ABI boundary |
 | `<windows.h>` (`user32.lib`, `kernel32`) | `teto_win32.c` | `GetLastInputInfo`, `GetCursorPos`, `RegisterHotKey`, message loop, threads, events, critical sections, job objects |
-| `<stdio.h>` | tests | `printf` |
+| `<stdlib.h>` | `teto_win32.c` | `malloc`, `calloc`, `free` |
+| `<wchar.h>` | `teto_win32.c` | `wcslen`, `wcsrchr` on UTF-16 strings |
+| `<psapi.h>` | tests | `GetProcessMemoryInfo` for the leak check |
+| `<stdio.h>`, `<string.h>` | tests | `printf`, `strcmp`, `strlen` |
 
 ## Rust standard library
 
 | Module | Where (`rust/shell/src`) | What for |
 | --- | --- | --- |
-| `std::ffi::c_void` | `native.rs` | the C `void*` type |
+| `std::ffi::{c_void, c_char, CStr}` | `native.rs` | C's `void*`, `char`, and borrowed C strings |
+| `std::ptr::NonNull` | `native.rs` | a never-null raw pointer for the C snapshot |
 | `std::sync::Mutex` | `native.rs`, `lib.rs` | the hotkey closure slot; shared `Services` |
 | `std::process::{Command, Child, Stdio}` | `supervisor.rs` | start helpers |
 | `std::os::windows::process::CommandExt` | `supervisor.rs` | `CREATE_NO_WINDOW` flag |
@@ -148,7 +152,8 @@ grep -h '^#include' c/win32hooks/*/*.c | sort -u
 
 ## References
 
-**Official**
+### Official
+
 - Tauri: <https://v2.tauri.app/>
 - serde: <https://serde.rs/>
 - `getrandom` crate: <https://docs.rs/getrandom/>
@@ -162,5 +167,6 @@ grep -h '^#include' c/win32hooks/*/*.c | sort -u
 - Windows API index: <https://learn.microsoft.com/en-us/windows/win32/apiindex/windows-api-list>
 - Node.js API: <https://nodejs.org/api/>
 
-**Other**
+### Other
+
 - Russ Cox, *Our Software Dependency Problem*: <https://research.swtch.com/deps>

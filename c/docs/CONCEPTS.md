@@ -22,6 +22,7 @@ ideas it relies on.
 15. [Testing C without a framework](#15-testing-c-without-a-framework)
 16. [Principles applied](#16-principles-applied)
 17. [Exercises](#17-exercises)
+- [Heap memory: the foreground-window snapshot](#heap-memory-the-foreground-window-snapshot)
 18. [References](#references)
 
 ## 1. Headers vs source files, include guards
@@ -187,9 +188,29 @@ types real keys into your session, so it only runs with `TETO_TEST_INPUT=1`.
 3. Self-check: why must `teto_hotkey_stop` *join* the thread instead of
    just posting `WM_QUIT`?
 
+## Heap memory: the foreground-window snapshot
+
+`teto_foreground_window()` is the module's one heap allocation, and it's
+written to show every C memory habit (full explanation in
+[docs/MEMORY.md](../../docs/MEMORY.md#c-manual-memory-made-explicit)):
+
+| Habit | Code |
+| --- | --- |
+| an **opaque type**: encapsulation in C | `typedef struct teto_window_info teto_window_info;` in the header, fields only in the `.c` file |
+| ownership written in the header | "the CALLER owns the result and must release it exactly once" |
+| `calloc` so a half-built object is safe to free | `info = calloc(1, sizeof *info)` |
+| `sizeof *info` instead of `sizeof(struct ...)` | stays correct if the type changes |
+| stack buffer, then copy to the heap before returning | `wchar_t title[512]` → `utf8_from_wide` |
+| two-call sizing with `WideCharToMultiByte` | ask the size, `malloc(n + 1)`, fill, add `'\0'` |
+| least privilege | `OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, …)`, closed right away |
+| NULL-safe free, `free(NULL)` is a no-op | `teto_window_info_free` |
+| a leak check in the tests | 20,000 alloc/free cycles, compare `PrivateUsage` |
+| data minimization | titles never leave the C/Rust layer; only the `.exe` name goes to the UI |
+
 ## References
 
-**Official**
+### Official
+
 - C reference (cppreference): <https://en.cppreference.com/w/c>
 - `stdint.h`: <https://en.cppreference.com/w/c/types/integer>
 - `GetLastInputInfo`: <https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-getlastinputinfo>
@@ -200,6 +221,7 @@ types real keys into your session, so it only runs with `TETO_TEST_INPUT=1`.
 - One-time initialization: <https://learn.microsoft.com/en-us/windows/win32/sync/one-time-initialization>
 - Critical sections: <https://learn.microsoft.com/en-us/windows/win32/sync/critical-section-objects>
 
-**Other**
+### Other
+
 - Raymond Chen, *The Old New Thing* (Win32 history and gotchas): <https://devblogs.microsoft.com/oldnewthing/>
 - Beej's Guide to C Programming: <https://beej.us/guide/bgc/>

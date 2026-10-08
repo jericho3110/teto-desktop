@@ -22,6 +22,7 @@ about the language.
 14. [Testing native code from JavaScript](#14-testing-native-code-from-javascript)
 15. [Principles applied](#15-principles-applied)
 16. [Exercises](#16-exercises)
+- [Memory management and the particle system](#memory-management-and-the-particle-system)
 17. [References](#references)
 
 ## 1. Headers, source files and `#pragma once`
@@ -191,9 +192,43 @@ the C ABI.
 3. Add `phys_reset(chain)` that zeroes one chain. Validate the index!
 4. Self-check: why does `cos_approx` call `sin_approx` instead of having its own polynomial?
 
+## Memory management and the particle system
+
+`memory.hpp`, `particles.hpp` and `particles.cpp` (a second translation
+unit linked into the same `.wasm`) apply C++'s memory tools without a
+standard library. Full explanation: [docs/MEMORY.md](../../docs/MEMORY.md#c-raii-arenas-pools-and-data-layout).
+
+| Concept | Where |
+| --- | --- |
+| arena (bump) allocator, alignment arithmetic | `teto::Arena::allocate` |
+| placement new (we declare it ourselves: no `<new>`) | `operator new(size_t, void*)`, `Arena::create` |
+| variadic templates | `template <typename T, typename... Args> T* create(Args... args)` |
+| deleted copy constructor / assignment | `Arena(const Arena&) = delete;` |
+| `constexpr` constructor + `constinit` | the global arena is built at compile time |
+| object pool with a free list | `fx::Store::acquire` / `release` |
+| struct of arrays, shared with JS zero-copy | `float x[N], y[N]…`; `fx_field()` returns their offsets |
+| `.bss` vs `.data` (measured: 15 KB → 5.7 KB) | no default member initializers in `fx::Store` |
+| `alignas(16)` | `g_arena_bytes` |
+| `using size_t = decltype(sizeof(0))` | freestanding: no `<cstddef>` |
+| `reinterpret_cast` to an integer address | `fx_field` (a wasm32 pointer is a byte offset) |
+
+And OOP, explained in [docs/PARADIGMS.md](../../docs/PARADIGMS.md):
+
+| Concept | Where |
+| --- | --- |
+| abstract base class, pure virtual functions (`= 0`) | `fx::Emitter::spawn`, `update` |
+| inheritance, `final`, `override` | `class Sparkle final : public Emitter` |
+| virtual dispatch through a vtable | `g_emitters[k]->update(...)`; the reason the wasm has a `TABLE` section |
+| Template Method pattern | non-virtual `tick()` / `burst()` calling the virtual steps |
+| protected non-virtual destructor | emitters are never deleted through `Emitter*` |
+| `__cxa_pure_virtual` | normally from the C++ runtime; we provide it (it traps) |
+| `enum` with an explicit underlying type | `enum Kind : unsigned char` |
+| nested namespaces | `namespace teto::fx` |
+
 ## References
 
-**Official / standard**
+### Official / standard
+
 - cppreference, classes: <https://en.cppreference.com/w/cpp/language/classes>
 - cppreference, templates: <https://en.cppreference.com/w/cpp/language/templates>
 - cppreference, `constexpr`: <https://en.cppreference.com/w/cpp/language/constexpr>
@@ -204,6 +239,7 @@ the C ABI.
 - Clang, `export_name` attribute: <https://clang.llvm.org/docs/AttributeReference.html#export-name>
 - Clang, diagnostic flags: <https://clang.llvm.org/docs/DiagnosticsReference.html>
 
-**Other**
+### Other
+
 - C++ Core Guidelines: <https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines>
 - Surma, *Compiling C to WebAssembly without Emscripten*: <https://surma.dev/things/c-to-webassembly/>

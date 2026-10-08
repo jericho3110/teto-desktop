@@ -3,6 +3,8 @@
  */
 #define WIN32_LEAN_AND_MEAN /* skip rarely used parts of <windows.h>: faster builds */
 #include <windows.h>
+#include <stdlib.h> /* malloc, calloc, free */
+#include <wchar.h>  /* wcslen, wcsrchr */
 
 #include "teto_win32.h"
 
@@ -154,4 +156,103 @@ int teto_kill_children_on_exit(void) {
         return 0;
     }
     return 1;
+}
+
+/* ---- the foreground window -------------------------------------------- */
+
+/* The real layout, visible only in this file. Callers see an opaque
+ * `teto_window_info *` and can't touch (or forget to free) the fields. */
+struct teto_window_info {
+    char *app;   /* heap, UTF-8, owned by this struct */
+    char *title; /* heap, UTF-8, owned by this struct */
+};
+
+/* UTF-16 (what Windows uses) -> a NEW heap UTF-8 string, or NULL.
+ * The classic Win32 two-call pattern: ask for the size, allocate, fill. */
+static char *utf8_from_wide(const wchar_t *w, int wlen) {
+    char *out;
+    int n;
+    if (wlen <= 0) {
+        out = (char *)malloc(1);
+        if (out != NULL) {
+            out[0] = '\0';
+        }
+        return out;
+    }
+    n = WideCharToMultiByte(CP_UTF8, 0, w, wlen, NULL, 0, NULL, NULL); /* 1st call: how many bytes? */
+    if (n <= 0) {
+        return NULL;
+    }
+    /* +1: with an explicit input length the output is NOT NUL-terminated. */
+    out = (char *)malloc((size_t)n + 1);
+    if (out == NULL) {
+        return NULL;
+    }
+    if (WideCharToMultiByte(CP_UTF8, 0, w, wlen, out, n, NULL, NULL) != n) { /* 2nd call: fill */
+        free(out); /* never leak on an error path */
+        return NULL;
+    }
+    out[n] = '\0';
+    return out;
+}
+
+teto_window_info *teto_foreground_window(void) {
+    wchar_t title[512];         /* stack buffers: freed automatically on return */
+    wchar_t path[MAX_PATH * 4];
+    DWORD path_len = (DWORD)(sizeof path / sizeof path[0]);
+    const wchar_t *name = L"";
+    DWORD pid = 0;
+    HANDLE proc;
+    int title_len;
+    teto_window_info *info;
+    HWND hwnd = GetForegroundWindow();
+
+    if (hwnd == NULL) {
+        return NULL;
+    }
+    /* calloc zeroes the struct: both pointers start NULL, so freeing a
+     * half-built object on an error path is always safe. */
+    info = (teto_window_info *)calloc(1, sizeof *info);
+    if (info == NULL) {
+        return NULL;
+    }
+
+    /* Copies at most 511 chars + NUL into our buffer: can't overflow. */
+    title_len = GetWindowTextW(hwnd, title, (int)(sizeof title / sizeof title[0]));
+    info->title = utf8_from_wide(title, title_len);
+
+    /* Which program owns the window: window -> process id -> exe path. */
+    GetWindowThreadProcessId(hwnd, &pid);
+    proc = OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, FALSE, pid); /* least privilege: read-only query */
+    if (proc != NULL) {
+        if (QueryFullProcessImageNameW(proc, 0, path, &path_len)) {
+            const wchar_t *slash = wcsrchr(path, L'\\');
+            name = slash != NULL ? slash + 1 : path; /* points into `path`: valid until we return */
+        }
+        CloseHandle(proc);
+    }
+    info->app = utf8_from_wide(name, (int)wcslen(name)); /* copied to the heap before `path` dies */
+
+    if (info->app == NULL || info->title == NULL) {
+        teto_window_info_free(info);
+        return NULL;
+    }
+    return info; /* ownership passes to the caller */
+}
+
+const char *teto_window_app(const teto_window_info *info) {
+    return (info != NULL && info->app != NULL) ? info->app : "";
+}
+
+const char *teto_window_title(const teto_window_info *info) {
+    return (info != NULL && info->title != NULL) ? info->title : "";
+}
+
+void teto_window_info_free(teto_window_info *info) {
+    if (info == NULL) {
+        return;
+    }
+    free(info->app); /* free(NULL) is defined to do nothing */
+    free(info->title);
+    free(info); /* the struct last: its fields were read just above */
 }

@@ -48,6 +48,34 @@ void teto_hotkey_stop(void);
  * Returns 1 on success, 0 on failure. Call once, early. */
 int teto_kill_children_on_exit(void);
 
+/* ---- the foreground window (heap memory crossing the API) -------------
+ *
+ * An OPAQUE type: callers only ever hold a pointer and use the functions
+ * below; the struct's fields are private to teto_win32.c. That's
+ * encapsulation in plain C.
+ *
+ * OWNERSHIP: teto_foreground_window() allocates; the CALLER owns the result
+ * and must release it exactly once with teto_window_info_free(). The
+ * strings returned by the getters belong to the info object: they stay
+ * valid until it is freed, and must not be freed separately.
+ */
+typedef struct teto_window_info teto_window_info;
+
+/* Snapshot of the window you're using now. NULL if there is none (e.g. the
+ * desktop has focus) or memory ran out. */
+teto_window_info *teto_foreground_window(void);
+
+/* The program's file name, e.g. "Code.exe" (UTF-8). Never NULL; "" if unknown. */
+const char *teto_window_app(const teto_window_info *info);
+
+/* The window title (UTF-8). Never NULL; "" if none. Titles can contain
+ * private things (document names, email subjects): Teto never sends them
+ * anywhere (data minimization), only the app name. */
+const char *teto_window_title(const teto_window_info *info);
+
+/* Releases the snapshot and both strings. Safe to call with NULL. */
+void teto_window_info_free(teto_window_info *info);
+
 #ifdef __cplusplus
 }
 #endif

@@ -5,6 +5,9 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versions follo
 ## [Unreleased]
 
 ### Added
+- `ForegroundWindow`: RAII owner of the C snapshot (`NonNull` + `Drop`,
+  borrowed `&str` tied to the owner's lifetime); `native://app` event with
+  the program name only (never the window title).
 - Tauri 2 shell: transparent, frameless, always-on-top window; `get_config`
   command; `native://cursor`, `native://idle`, `native://hotkey` events.
 - FFI bindings to `c/win32hooks` (built by `build.rs` with the `cc` crate),

@@ -151,7 +151,8 @@ so cleanup happens even if a step throws.
 
 ## References
 
-**Official**
+### Official
+
 - MDN, JavaScript modules: <https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Modules>
 - MDN, closures: <https://developer.mozilla.org/en-US/docs/Web/JavaScript/Closures>
 - MDN, `Array.prototype.filter`: <https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/filter>
@@ -162,5 +163,6 @@ so cleanup happens even if a step throws.
 - Node, `WebSocket` global: <https://nodejs.org/api/globals.html#websocket>
 - Chrome DevTools Protocol: <https://chromedevtools.github.io/devtools-protocol/>
 
-**Other**
+### Other
+
 - javascript.info, closures: <https://javascript.info/closure>

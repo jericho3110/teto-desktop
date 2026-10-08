@@ -64,7 +64,8 @@ can, with or without Teto.
 | | strict Content Security Policy: scripts only from the app, network only to the brain | `rust/shell/tauri.conf.json` |
 | | least-privilege Tauri capabilities (drag, focus, click-through on its own window) | `rust/shell/capabilities/default.json` |
 | | skins sanitized with an allow-list (no scripts, handlers, `foreignObject`, links, external `url()`) | `typescript/ui/src/sanitize.ts` |
-| Processes | job object kills every helper when Teto exits or crashes | `c/win32hooks/src/teto_win32.c` |
+| Privacy | the C module can read window titles, but only the foreground **program name** ever leaves the C/Rust layer (data minimization); `OpenProcess` asks only for `PROCESS_QUERY_LIMITED_INFORMATION` | `c/win32hooks`, `rust/shell/src/lib.rs` |
+| Processes | job object kills every helper when Teto exits or crashes (verified live: force-killing only `teto-shell.exe` took down brain, Python, Java and C# with it) | `c/win32hooks/src/teto_win32.c` |
 | | children started by absolute path or `PATH`, never through a shell | `supervisor.rs`, `claude.go` |
 
 ## Security review (2026-10-08)
@@ -126,7 +127,8 @@ Also checked, no issue found:
 
 ## References
 
-**Official**
+### Official
+
 - Claude Code, permission modes and tools that need approval ✔: <https://code.claude.com/docs/en/tools-reference>
 - Claude Code, run programmatically (`--permission-mode`, `--disallowedTools`) ✔: <https://code.claude.com/docs/en/headless>
 - OWASP, Cross-Site Request Forgery: <https://owasp.org/www-community/attacks/csrf>
@@ -139,7 +141,8 @@ Also checked, no issue found:
 - Microsoft, job objects: <https://learn.microsoft.com/en-us/windows/win32/procthread/job-objects>
 - Go `os/exec`, executables in the current directory ✔: <https://pkg.go.dev/os/exec#hdr-Executables_in_the_current_directory>
 
-**Other**
+### Other
+
 - Simon Willison, *Prompt injection* series: <https://simonwillison.net/series/prompt-injection/>
 - Wikipedia, DNS rebinding: <https://en.wikipedia.org/wiki/DNS_rebinding>
 - Smart App Control re-enable without reinstall (KB5083769): <https://blog-en.topedia.com/2026/04/smart-app-control-in-windows-11-can-now-be-re-enabled-without-reinstalling/>

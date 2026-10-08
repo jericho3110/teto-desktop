@@ -1,8 +1,9 @@
 // The animation loop: every frame, read the Mind (what she's doing),
 // decide the pose (face.ts), and push it into the skin and physics.
+import type { FxLayer } from "./fxlayer";
 import type { HairPhysics } from "./physics";
 import type { Skin } from "./skin";
-import type { Emotion } from "./types";
+import type { Emotion, Face } from "./types";
 import {
   approach, currentFace, emotionDuration, eyesFor, mouthFor, newMind, nextBlinkGap, type Mind,
 } from "./face";
@@ -31,7 +32,24 @@ export class Animator {
     private skin: Skin,
     private physics: HairPhysics | null, // null if the wasm failed to load: she still works, hair stays still
     private stage: HTMLElement, // the element the SVG lives in (for hop + eye tracking)
+    private fx: FxLayer | null = null, // C++ particles; null = no effects
   ) {}
+
+  private lastFace: Face | null = null;
+
+  /** Particle effects start/stop when the face CHANGES, not every frame. */
+  private onFaceChange(face: Face) {
+    const fx = this.fx?.effects;
+    if (!fx) return;
+    const r = this.stage.getBoundingClientRect();
+    const head = { x: r.left + r.width / 2, y: r.top + r.height * 0.18 };
+    fx.stream("sweat", 0);
+    fx.stream("zzz", 0);
+    if (face === "excited") fx.burst("sparkle", head.x, head.y, 28);
+    if (face === "happy") fx.burst("heart", head.x, head.y + 20, 5);
+    if (face === "worried") fx.stream("sweat", 4, r.left + r.width * 0.7, r.top + r.height * 0.24);
+    if (face === "sleeping") fx.stream("zzz", 0.7, r.left + r.width * 0.72, r.top + r.height * 0.15);
+  }
 
   start() {
     const loop = (t: number) => {
@@ -67,6 +85,11 @@ export class Animator {
     }
 
     const face = currentFace(m);
+    if (face !== this.lastFace) {
+      this.lastFace = face;
+      this.onFaceChange(face);
+    }
+    this.fx?.draw(dt);
     const expr = this.skin.manifest.expressions[face];
     this.skin.setEyes(eyesFor(expr, m));
     this.skin.setMouth(mouthFor(expr, m));

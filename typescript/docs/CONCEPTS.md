@@ -24,6 +24,7 @@ Every TypeScript (and browser) concept and principle in `typescript/ui/`.
 18. [Testing: node:test and type stripping](#18-testing-nodetest-and-type-stripping)
 19. [Principles applied](#19-principles-applied)
 20. [Exercises](#20-exercises)
+- [Typed arrays over WebAssembly memory; canvas drawing](#typed-arrays-over-webassembly-memory-canvas-drawing)
 21. [References](#references)
 
 ## 1. What TypeScript adds to JavaScript
@@ -247,9 +248,24 @@ that satisfies the `SanitizableElement` interface (a test double).
    Node from importing it, and how would you split it?
 4. Self-check: why does `main.ts` pass `ev.detail ?? ev.summary` and not `ev.detail || ev.summary`?
 
+## Typed arrays over WebAssembly memory; canvas drawing
+
+- `new Float32Array(memory.buffer, byteOffset, length)` creates a **view**
+  of the C++ particle arrays, so no data is copied. `Uint8Array` does the same for
+  the `kind` bytes (`physics.ts: Effects`).
+- **Gotcha:** if wasm memory grows, `memory.buffer` is replaced and old
+  views become empty (detached). The C++ never grows memory; a test pins it.
+- `fxlayer.ts` paints with the **Canvas 2D API** (`beginPath`, `lineTo`,
+  `bezierCurveTo`, `globalAlpha`) and scales by `devicePixelRatio` so
+  shapes stay sharp at 125%/150% Windows scaling.
+- The canvas has `pointer-events: none`, so it never catches the mouse.
+- `loadPhysics()` loads the module once; `HairPhysics` and `Effects` share
+  its exports (**composition**: two small classes over one resource).
+
 ## References
 
-**Official**
+### Official
+
 - TypeScript Handbook: <https://www.typescriptlang.org/docs/handbook/intro.html>
 - Narrowing / discriminated unions: <https://www.typescriptlang.org/docs/handbook/2/narrowing.html>
 - Utility types: <https://www.typescriptlang.org/docs/handbook/utility-types.html>
@@ -262,6 +278,7 @@ that satisfies the `SanitizableElement` interface (a test double).
 - Vite guide: <https://vite.dev/guide/>
 - Tauri, calling Rust from the frontend: <https://v2.tauri.app/develop/calling-rust/>
 
-**Other**
+### Other
+
 - Freya Holmér, *Lerp smoothing is broken*: <https://www.youtube.com/watch?v=LSNQuFEDOyQ>
 - OWASP, XSS prevention cheat sheet: <https://cheatsheetseries.owasp.org/cheatsheets/Cross_Site_Scripting_Prevention_Cheat_Sheet.html>
