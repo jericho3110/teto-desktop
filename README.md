@@ -3,132 +3,126 @@
 A chibi desktop assistant who lives on your screen, has quirks and
 animations, and does real work: behind her speech bubble is
 [Claude Code](https://code.claude.com/docs/en/overview), running headless.
+Every action she wants to take on your PC shows up in her bubble with
+**Allow / Deny** buttons.
 
-It's also a **polyglot learning project**: each part is written in the
-language that suits it, and every pair of parts is linked with a
-*different* technique (FFI, WebAssembly, pipes, HTTP, Server-Sent Events,
-named pipes), so you can see how real systems glue languages together.
+It's also a **polyglot learning project**: nine languages, each in its own
+folder and doing the job it's best at, linked to each other with a
+*different* technique every time (FFI, WebAssembly, pipes, HTTP,
+Server-Sent Events, named pipes, Tauri IPC).
 
 ![expression sheet](docs/img/expressions.png)
 
-## Status (milestone 1 "thin slice", in progress)
+## Repository layout: one folder per language
 
-| Part | Language | State |
-| --- | --- | --- |
-| Brain daemon: drives Claude Code, permission prompts | **Go** | ✅ done, tested (unit + live) |
-| Mood engine: reply → emotion | **Python** | ✅ done, tested |
-| Hair physics for the drills | **C++ → WebAssembly** | ✅ done, tested |
-| UI: animator, bubble, command bar | **TypeScript** | ✅ done, tested in a browser |
-| Quirks (personality scripts) | **JavaScript** | ✅ done |
-| Skin generator (the art) | **Python** | ✅ done |
-| Desktop window: transparent, always on top, click-through | **Rust** (Tauri) | 🚧 waiting for the MSVC linker |
-| Win32 hooks: idle time, cursor, global hotkey, kill-children job | **C** | 🚧 waiting for the C compiler |
-| Reminder service | **Java** | 🚧 written, waiting for the JDK |
-| Tray icon, notifications, voice | **C#** | 🚧 waiting for the .NET SDK |
+| Folder | Language | Component | Linked to the rest by |
+| --- | --- | --- | --- |
+| [`rust/`](rust/) | Rust | `shell/`: the transparent, always-on-top desktop window (Tauri); starts every helper | Tauri IPC ↔ TypeScript, **FFI** → C |
+| [`c/`](c/) | C | `win32hooks/`: idle time, cursor, global hotkey, kill-helpers-on-exit | C ABI (static library linked into Rust) |
+| [`typescript/`](typescript/) | TypeScript | `ui/`: animator, speech bubble, command bar, skin loader | HTTP + **SSE** → Go, **WebAssembly** → C++ |
+| [`javascript/`](javascript/) | JavaScript | `quirks/`: personality plugins; `tools/ui_probe.mjs` | dynamic `import()` |
+| [`cpp/`](cpp/) | C++ | `physics/`: spring-chain physics for the drills | compiled to **WebAssembly** |
+| [`go/`](go/) | Go | `brain/`: drives Claude Code, permission prompts, wiring | **stdin/stdout JSON** ↔ Claude Code & Python |
+| [`python/`](python/) | Python | `mood/`: reply → emotion; `skin_gen/`: the art; `tools/` | JSON lines over pipes |
+| [`java/`](java/) | Java | `reminders/`: the reminder service | HTTP (form in, JSON out) |
+| [`csharp/`](csharp/) | C# | `Companion/`: tray icon, notifications, voice | Windows **named pipe** |
+| [`assets/`](assets/) | SVG | `skins/teto-chibi/`: the art + manifest (swappable) | data |
+| [`docs/`](docs/) | – | workspace-level docs | – |
+
+Each language folder has its own `README.md` (build/test commands),
+`docs/CONCEPTS.md` (**every concept and principle used in that language,
+with where and why**), and `CHANGELOG.md`.
 
 ## How it fits together
 
+```text
+ you ─► [TypeScript UI in the Rust/Tauri window] ◄── native events ── Rust ──FFI──► C (Win32)
+             │  ▲                ▲
+   HTTP POST │  │ SSE            └── WebAssembly ── C++ hair physics
+             ▼  │
+          [Go brain] ──stdin/stdout JSON──► claude -p (Claude Code)
+             │  │  └──named pipe──► C# (tray, toasts, voice)
+             │  └──HTTP──► Java (reminders)
+             └──JSON lines──► Python (mood)
 ```
- you ──type──► [TypeScript UI in a Tauri window]  ◄── native events ── [Rust] ──FFI──► [C: Win32]
-                    │ ▲            ▲
-        HTTP POST   │ │ SSE        └── WebAssembly ── [C++ hair physics]
-                    ▼ │
-               [Go brain] ──stdin/stdout JSON──► claude -p (Claude Code)
-                 │   │   └──named pipe──► [C#: tray, toasts, voice]
-                 │   └──HTTP form/JSON──► [Java: reminders]
-                 └──stdin/stdout JSON lines──► [Python: mood]
-```
 
-Full explanation: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
+Details: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
 
-## Setup
-
-You need: Go 1.22+, Python 3.10+, Node 22.18+ (type stripping), LLVM/clang
-(for the wasm build), and Claude Code logged in. Rust + MSVC Build Tools,
-a JDK 21+ and .NET 8+ are needed for the parts still in progress.
+## Setup (Windows 11)
 
 ```powershell
-winget install GoLang.Go LLVM.LLVM          # what this milestone needs so far
-cd physics; npm run build; cd ..            # C++ → physics/dist/physics.wasm
-cd brain;   go build -o bin/teto-brain.exe .; cd ..
-cd app;     npm install; cd ..
+winget install GoLang.Go LLVM.LLVM Microsoft.DotNet.SDK.10 EclipseAdoptium.Temurin.25.JDK
+winget install Microsoft.VisualStudio.BuildTools --override "--quiet --wait --add Microsoft.VisualStudio.Workload.VCTools --includeRecommended"
+# plus: Rust (https://rustup.rs), Node 22.18+, Python 3.10+, Claude Code (logged in)
+cargo install tauri-cli --version "^2" --locked
 ```
 
-| Command | What it does |
-| --- | --- |
-| `npm run build` (in `physics/`) | `clang++ --target=wasm32 -nostdlib ...`: compiles freestanding C++ to a ~1.4 KB `.wasm` (flags explained in [docs/PHYSICS.md](docs/PHYSICS.md)) |
-| `go build -o bin/teto-brain.exe .` | compiles the brain into one self-contained `.exe` |
-| `npm install` | downloads Vite, TypeScript and the Tauri JS API into `app/node_modules` |
+> **Smart App Control** (Windows 11) blocks Cargo's build scripts, so Rust
+> can't build while it's on. See [docs/SECURITY.md](docs/SECURITY.md#developer-notes).
 
-## Running (until the Rust shell lands)
+Build everything once:
 
 ```powershell
-# 1. the brain (TETO_TOKEN is the shared secret; the Rust shell will generate it)
-$env:TETO_TOKEN = "devtoken"
-.\brain\bin\teto-brain.exe -workdir C:\some\folder -mood mood\mood.py -speak=false
-
-# 2. the UI, in your browser
-cd app; npm run dev        # then open http://localhost:1420/?token=devtoken
+cd go/brain;          go build -o bin/teto-brain.exe .;                  cd ../..
+cd cpp/physics;       npm run build;                                      cd ../..
+cd java/reminders;    javac -Xlint:all -Werror -d out src/teto/reminders/*.java; cd ../..
+cd csharp;            dotnet build Companion -c Release;                  cd ..
+cd typescript/ui;     npm install;                                        cd ../..
 ```
 
-| Brain flag | Meaning |
-| --- | --- |
-| `-workdir` | the folder Claude Code works in (its "project") |
-| `-mood` | path to `mood/mood.py`; empty disables the mood engine |
-| `-model` | model override, e.g. `claude-haiku-4-5-20251001` for cheap testing |
-| `-speak=false` | don't send replies to the (not yet built) C# voice |
-| `-addr` | listen address, default `127.0.0.1:47800`. Keep it on localhost |
+## Run
 
-Type in the bar (click Teto to open it). `/remind 10m stretch` and
-`/remind 17:30 call mom` set reminders (once the Java service runs).
+```powershell
+cd rust/shell
+cargo tauri dev        # starts Vite, builds the shell, opens Teto; the shell starts every helper
+```
+
+Click Teto (or press **Ctrl+Alt+Space**) to open the command bar. Drag her
+anywhere. `/remind 10m stretch` sets a reminder. Claude works in
+`~/TetoWorkspace`. Helper logs: `%LOCALAPPDATA%\Teto\logs`.
 
 ## Tests
 
-| Part | Command | What it covers |
+| Folder | Command | Tests |
 | --- | --- | --- |
-| Go brain | `cd brain; go vet ./...; go test ./...` | token check, the full permission round trip against a **fake Claude** (allow + deny), `/remind` parsing |
-| Python mood | `python -m unittest discover -s mood` | emotions, negation, the JSON-lines protocol as a real child process |
-| C++ physics | `cd physics; npm run build; npm test` | loads the real `.wasm` in Node: rest, swing direction, settling, clamping |
-| TS animator | `cd app; npm run typecheck; npm test` | face priority, blinking, mouth flaps, frame-rate-independent smoothing |
-| Live, real Claude | `python tools/smoke_brain.py --token devtoken "Say hi"` | one real prompt through the running brain (add `--allow` to approve tools) |
-| Live UI | `node tools/ui_probe.mjs "http://localhost:1420/?token=devtoken" out.png` | headless Edge: console errors + screenshot |
-
-## Layout
-
-```
-brain/       Go     brain daemon (HTTP+SSE server, Claude Code driver, service clients)
-mood/        Python mood engine (stdin/stdout JSON lines)
-physics/     C++    spring-chain hair physics → WebAssembly
-app/         TS     UI (src/) + Tauri/Rust shell (src-tauri/, in progress)
-quirks/      JS     personality scripts, loaded at runtime
-skins/       SVG    teto-chibi/: manifest.json + teto.svg (swappable)
-reminders/   Java   reminder service (in progress)
-tools/              skin generator, live smoke test, UI probe
-docs/               everything explained
-```
+| `go/brain` | `go vet ./... ; go test -count=1 ./...` | 11, incl. permission round trip with a fake Claude, 7 security regressions |
+| `python/` | `python -m unittest discover -s python/mood` | 5 |
+| `cpp/physics` | `npm run build ; npm test` | 6, on the real `.wasm` |
+| `typescript/ui` | `npm run typecheck ; npm test` | 9, incl. skin sanitizer |
+| `java/reminders` | see [java/README.md](java/README.md) | 19 checks, incl. forged requests |
+| `c/win32hooks` | see [c/README.md](c/README.md) | 7 |
+| `csharp/` | `dotnet test Teto.slnx` | 13, incl. a real pipe round trip |
+| `rust/shell` | `cargo test` | FFI + supervisor |
+| live | `python python/tools/smoke_brain.py --token devtoken "Say hi"` | real Claude through a running brain |
 
 ## Docs
 
-| Doc | Read it for |
+| Doc | For |
 | --- | --- |
-| [ARCHITECTURE.md](docs/ARCHITECTURE.md) | why it's built this way, how a prompt flows end to end, trade-offs |
-| [PROTOCOL.md](docs/PROTOCOL.md) | every message between UI, brain, Claude Code and the services |
-| [PHYSICS.md](docs/PHYSICS.md) | the hair simulation and freestanding WebAssembly |
-| [LEARNING_PATH.md](docs/LEARNING_PATH.md) | a reading order through the code, with exercises |
-| [CONVENTIONS.md](docs/CONVENTIONS.md) | naming, layout, commits |
-| [LIBRARIES_AND_BUILTINS.md](docs/LIBRARIES_AND_BUILTINS.md) | every library/stdlib module/language feature used, and why |
-| [CHANGELOG.md](CHANGELOG.md) | what changed per version |
+| [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) | the whole system: why it's built this way, one prompt end to end |
+| [docs/SECURITY.md](docs/SECURITY.md) | threat model, defenses, security review, safe use |
+| [docs/PROTOCOL.md](docs/PROTOCOL.md) | every message between the parts |
+| [docs/LEARNING_PATH.md](docs/LEARNING_PATH.md) | a reading order through all nine languages, with exercises |
+| [docs/LIBRARIES_AND_BUILTINS.md](docs/LIBRARIES_AND_BUILTINS.md) | every dependency and standard-library module, and why |
+| [docs/CONVENTIONS.md](docs/CONVENTIONS.md) | layout, naming, commits |
+| `<language>/docs/CONCEPTS.md` | the language deep-dives |
+| [CHANGELOG.md](CHANGELOG.md) | workspace changes |
 
 ## Art & credits
 
 Teto's look is an **original** chibi drawing in the style of Kasane Teto
 (character © TWINDRILL), generated as SVG by
-[tools/skin_gen/gen_teto.py](tools/skin_gen/gen_teto.py). Personal,
-non-commercial fan project. Skins are swappable: see the manifest format
-in [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md#skins).
+[python/skin_gen/gen_teto.py](python/skin_gen/gen_teto.py). This is a
+non-commercial fan project. Skins are swappable: see
+[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md#skins).
+
+## License
+
+[MIT](LICENSE) for the code. The Kasane Teto character belongs to TWINDRILL;
+the MIT license does not grant any rights to the character.
 
 ## References
 
-- Claude Code headless / `-p` mode: https://code.claude.com/docs/en/headless ✔
-- Tauri 2: https://v2.tauri.app/
-- Keep a Changelog: https://keepachangelog.com/en/1.1.0/
+- Claude Code, run programmatically: <https://code.claude.com/docs/en/headless>
+- Tauri 2: <https://v2.tauri.app/>
+- Keep a Changelog: <https://keepachangelog.com/en/1.1.0/>

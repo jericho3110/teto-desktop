@@ -1,250 +1,236 @@
 # Architecture
 
-Why Teto is built the way she is.
+Why Teto is built the way she is. Each language folder has its own
+`docs/ARCHITECTURE.md` or `docs/CONCEPTS.md` for the inside of its
+component; this page is about how they fit together.
 
 ## Contents
 
 1. [The big picture](#the-big-picture)
-2. [Why each language does its job](#why-each-language-does-its-job)
-3. [How the languages link](#how-the-languages-link)
-4. [One prompt, end to end](#one-prompt-end-to-end)
-5. [Permissions: the safety design](#permissions-the-safety-design)
-6. [The UI: skin, animator, physics](#the-ui-skin-animator-physics)
-7. [Skins](#skins)
-8. [Patterns and principles used](#patterns-and-principles-used)
-9. [Found live](#found-live)
-10. [Trade-offs and known limits](#trade-offs-and-known-limits)
-11. [References](#references)
+2. [Why one folder per language](#why-one-folder-per-language)
+3. [Why each language does its job](#why-each-language-does-its-job)
+4. [How the languages link](#how-the-languages-link)
+5. [Startup and shutdown](#startup-and-shutdown)
+6. [One prompt, end to end](#one-prompt-end-to-end)
+7. [Permissions: the safety design](#permissions-the-safety-design)
+8. [Skins](#skins)
+9. [Patterns and principles used](#patterns-and-principles-used)
+10. [Found live](#found-live)
+11. [Trade-offs and known limits](#trade-offs-and-known-limits)
+12. [References](#references)
 
 ## The big picture
 
-**Architecture style:** a small *process-based* system (a hub and its
-spokes), not one program. Each part is its own process (or a module loaded
-into one) that talks over a well-defined protocol. Inside each process
-the code is *layered* in a light way (transport → logic), and the
-logic modules are kept free of I/O so they can be tested (a hexagonal
-idea: `face.ts`, `ReminderStore`, `ParseRemind`, `analyze()` are all pure).
+**Architecture style:** a small **hub-and-spoke system of processes**. The
+Rust shell owns the window and supervises the helpers; the Go brain is
+the hub every message passes through; each helper speaks one small
+protocol. Inside each component the code is lightly *layered*
+(transport → logic), and the logic is kept free of I/O so it can be
+tested: a **functional core with an imperative shell** (`face.ts`,
+`ParseRemind`, `analyze()`, `ReminderStore`, `Commands.Parse`).
 
+```text
+┌──────────────────────── rust/shell (Tauri window) ────────────────────────┐
+│  typescript/ui                                                            │
+│    main.ts ─► Animator ─► Skin (assets/skins SVG, sanitized)              │
+│      │           └─► HairPhysics ─► cpp/physics (WebAssembly)             │
+│      │  ◄── native://cursor, idle, hotkey ── Rust ──FFI──► c/win32hooks   │
+│      │  ◄── get_config (token) ──────────── Rust (supervisor starts ↓)    │
+└──────┼────────────────────────────────────────────────────────────────────┘
+       │ POST /prompt, /permission   ▲ SSE /events
+       ▼                             │
+┌──────────── go/brain ─────────────────┐
+│  Server ─► Claude ─► claude -p (child) │  ← Claude Code, headless
+│    ├─► MoodEngine ─► python/mood       │  ← child process, JSON lines
+│    ├─► Companion  ─► csharp/Companion  │  ← named pipe
+│    └─► Reminders  ─► java/reminders    │  ← HTTP + token
+└────────────────────────────────────────┘
 ```
-                         ┌──────────────── Tauri window (Rust) ─────────────────┐
-                         │  TypeScript UI                                        │
-   you ── click/type ──► │   main.ts ─► animator ─► skin (SVG)                   │
-                         │      │          └──► physics.wasm (C++)              │
-                         │      │                                                │
-                         │      │ native://cursor, idle, hotkey  ◄── Rust ◄─FFI─ C (Win32)
-                         └──────┼───────────────────────────────────────────────┘
-                     POST /prompt│ ▲ SSE /events
-                                 ▼ │
-                         ┌──────────────── Go brain ──────────────┐
-                         │  Server ─► Claude ─► claude -p (child)  │
-                         │    │                                    │
-                         │    ├─► MoodEngine ─► python mood.py     │
-                         │    ├─► Companion  ─► \\.\pipe\… (C#)    │
-                         │    └─► Reminders  ─► http :47801 (Java) │
-                         └─────────────────────────────────────────┘
-```
 
-Compare with the alternatives:
-
-| Style | What it would look like here | Why not (for now) |
+| Style | What it would look like | Why not (for now) |
 | --- | --- | --- |
-| **Monolith** in one language | e.g. everything in Electron/TypeScript | simplest, but the whole point is to learn how languages link |
-| **Microservices** | each part a network service with its own deployment | overkill: one user, one machine; no need for service discovery, retries, etc. |
-| **Hub with child processes** (chosen) | the brain owns its helpers; protocols are tiny | each part can be built, tested and restarted alone; the brain degrades gracefully when one is missing |
+| **Monolith** in one language | e.g. all Electron/TypeScript | simplest, but the point is learning how languages link |
+| **Microservices** | each part a networked service with its own deployment | overkill: one user, one machine |
+| **Hub + child processes** (chosen) | parts talk over tiny protocols; brain degrades gracefully | each part builds, tests and restarts alone |
+
+## Why one folder per language
+
+The repo is **packaged by language** at the top level (`go/`, `rust/`, …)
+and by component inside (`go/brain`, `python/mood`). That makes it obvious
+which language does what, and each folder has its own toolchain files
+(`go.mod`, `Cargo.toml`, `package.json`, `.csproj`), README and concepts
+guide.
+
+The usual alternative is **packaging by component** (`brain/`, `ui/`,
+`shell/`), which keeps a feature's code together when one feature spans
+languages. Here every component is a single language, so the two layouts
+group the same files; language-first is better for learning.
+Cross-language contracts live in [PROTOCOL.md](PROTOCOL.md) and
+`assets/skins/*/manifest.json`, not in any one language's folder.
 
 ## Why each language does its job
 
 | Part | Language | Why this language |
 | --- | --- | --- |
-| Window shell | **Rust** (Tauri) | Tauri gives a native, small (~10 MB) transparent window using the OS webview instead of bundling Chromium like Electron; Rust is memory-safe and has first-class C FFI |
-| UI | **TypeScript** | it runs in the webview; types catch protocol mistakes (`BrainEvent` is a typed union) |
-| Quirks | **JavaScript** | loaded at runtime with `import()`, no build step: drop a file in, she has a new habit |
-| Win32 hooks | **C** | the Windows API *is* a C API; C is the lingua franca every other language can call |
-| Hair physics | **C++** → WebAssembly | numeric code that runs 60×/s; classes/templates make the model tidy; wasm runs it at near-native speed inside the webview |
-| Brain | **Go** | great at juggling processes, pipes, timeouts and concurrent requests (goroutines + channels); compiles to one `.exe` |
-| Mood | **Python** | text processing is pleasant in Python; the natural place to later plug in an ML model |
-| Reminders | **Java** | a long-running service with a built-in HTTP server and virtual threads |
-| Tray/voice | **C#** | .NET has the nicest access to Windows UI (tray icon, notifications) and speech synthesis |
+| Window shell + supervisor | **Rust** (Tauri) | small native window using the OS webview (~10 MB vs Electron's ~150 MB), memory safety, first-class C FFI |
+| Win32 hooks | **C** | the Windows API *is* a C API; C's ABI is what every language can call |
+| UI | **TypeScript** | runs in the webview; the `BrainEvent` union types the protocol |
+| Quirks | **JavaScript** | loaded at runtime with `import()`: no build step |
+| Hair physics | **C++** → WebAssembly | numeric hot loop; templates at zero cost; near-native speed in the browser |
+| Brain | **Go** | processes, pipes, timeouts, concurrent connections: goroutines + channels; one static `.exe` |
+| Mood, art, tools | **Python** | text processing and scripting; the place to plug in ML later |
+| Reminders | **Java** | long-running service with a built-in HTTP server and virtual threads |
+| Tray, toasts, voice | **C#** | .NET has direct access to the Windows tray, notifications and speech |
 
 ## How the languages link
 
-Each link uses a different technique on purpose. This table is the heart
-of the project:
+Every link uses a different technique, on purpose:
 
 | Link | Technique | Format | Where |
 | --- | --- | --- | --- |
-| TS → Go | HTTP `POST` with a bearer token | JSON | `app/src/brain.ts`, `brain/server.go` |
-| Go → TS | **Server-Sent Events** (one long HTTP response) | `data: <json>\n\n` | `server.go: events`, `brain.ts: connect` |
-| Go ↔ Claude Code | child process, **stdin/stdout pipes** | newline-delimited JSON (`stream-json`) | `brain/claude.go` |
-| Go ↔ Python | child process, stdin/stdout pipes | JSON lines, strict request→response | `brain/services.go`, `mood/mood.py` |
-| Go → Java | HTTP | form-encoded in, JSON out | `services.go: Reminders`, `reminders/` |
-| Go → C# | **Windows named pipe** | one JSON line per connection | `services.go: Companion` |
-| TS → C++ | **WebAssembly** exports | plain numbers only | `app/src/physics.ts`, `physics/src/exports.cpp` |
-| Rust → C | **FFI** over the C ABI | C types, function pointers | *in progress* |
-| Rust → TS | Tauri events + commands | JSON (serde) | *in progress* |
+| TS → Rust | Tauri **command** (`invoke("get_config")`) | JSON (serde) | `typescript/ui/src/main.ts`, `rust/shell/src/lib.rs` |
+| Rust → TS | Tauri **events** (`native://cursor`, …) | JSON (serde) | `lib.rs: spawn_native_pollers` |
+| Rust → C | **FFI** over the C ABI, static library built by `build.rs` | C types, callback + `void*` | `rust/shell/src/native.rs`, `c/win32hooks` |
+| Rust → Go/Java/C# | child processes + environment variable | `TETO_TOKEN` | `rust/shell/src/supervisor.rs` |
+| TS → Go | HTTP `POST` with a bearer token | JSON | `brain.ts`, `go/brain/server.go` |
+| Go → TS | **Server-Sent Events** | `data: <json>\n\n` | `server.go: events`, `brain.ts` |
+| Go ↔ Claude Code | child process, stdin/stdout | `stream-json` lines | `go/brain/claude.go` |
+| Go ↔ Python | child process, stdin/stdout | JSON lines | `services.go`, `python/mood/mood.py` |
+| Go → Java | HTTP + bearer token | form in, JSON out | `services.go`, `java/reminders` |
+| Go → C# | Windows **named pipe** | one JSON line per connection | `services.go`, `csharp/Companion/PipeListener.cs` |
+| TS → C++ | **WebAssembly** exports | numbers only | `typescript/ui/src/physics.ts`, `cpp/physics/src/exports.cpp` |
+| TS → JS | dynamic `import()` + an API object | function calls | `typescript/ui/src/quirks.ts` |
 
-**Why SSE and not WebSocket?** Go's standard library has no WebSocket
-package (it would need a dependency), and our traffic is lopsided: the
-reply *streams* to the UI, while the UI only sends the occasional short
-command. SSE is exactly "server pushes a stream of events over plain
-HTTP", and the browser's `EventSource` even reconnects by itself. Cost:
-`EventSource` can't send headers, so the token goes in the query string
-for that one endpoint.
+**Why SSE and not WebSocket?** Go's standard library has no WebSocket, and
+the traffic is lopsided: replies *stream* to the UI, while commands are
+short POSTs. `EventSource` reconnects by itself. Cost: the token rides in
+the query string for `/events` only.
 
-**Why form-encoded to Java?** The JDK can *write* JSON with a
-`StringBuilder` but has no JSON *parser*. Form encoding can be decoded
-with `URLDecoder`. So each side uses the format the other finds easy.
+**Why form-encoded to Java?** The JDK can write JSON easily but has no JSON
+parser; it *can* decode forms. Each side uses what the other finds easy.
+
+## Startup and shutdown
+
+1. `cargo tauri dev` starts Vite (the UI) and the Rust shell.
+2. Rust calls `teto_kill_children_on_exit()` (C): the process joins a
+   **job object**, so every helper started later dies with it, even on a crash.
+3. Rust makes a 256-bit token (`getrandom`) and starts the brain, Java
+   reminders and C# companion with `TETO_TOKEN` in their environment
+   (`supervisor.rs`). Missing helpers are skipped.
+4. The brain starts Python (mood) itself, and Claude Code on the first prompt.
+5. The UI asks Rust for `{brainUrl, token}`, loads the skin and physics,
+   connects to `/events`, loads quirks.
+6. Rust polls the C module: cursor (~30 Hz, only when moved) and idle time
+   (every 2 s); the C hotkey thread fires `native://hotkey`.
+7. On exit: Rust stops the hotkey (joins its thread), kills the helpers;
+   the job object catches anything left.
 
 ## One prompt, end to end
 
 You type "run the tests" and press Enter:
 
-1. `commandbar.ts` → `main.ts` → `Brain.prompt()` sends
-   `POST /prompt {"text":"run the tests"}` with `Authorization: Bearer <token>`.
-2. `server.go: withCORS → withAuth → prompt` checks the token (constant-time
-   compare) and calls `Claude.Prompt()`.
-3. `claude.go` starts `claude -p --input-format stream-json ...` if it
-   isn't running yet (one long-lived process = the conversation keeps its
-   memory), publishes `status: thinking`, and writes
-   `{"type":"user","message":{...}}` to its stdin.
-4. The UI got `status: thinking` over SSE: the bubble shows "…", her ahoge
-   wiggles, eyes look up (`thinking` face).
-5. Claude streams `stream_event` lines; each `text_delta` is re-published.
-   The bubble fills in and her mouth flaps (`animator.talk()`).
-6. Claude wants `Bash: npm test`. It writes a
-   `control_request` / `can_use_tool` line. The brain publishes
-   `permission_request`; the bubble shows **Allow / Deny**.
-7. You click Allow → `POST /permission {"id":..,"allow":true}` →
-   `AnswerPermission` hands the answer to the waiting goroutine through a
-   channel → the brain writes a `control_response` with
-   `"behavior":"allow"`.
-8. Claude runs the tests, then sends a `result` line. The brain publishes
-   `reply_done` and asks Python for a mood (`{"emotion":"happy",...}`),
-   publishes `mood`, and (later) asks C# to speak the reply.
-9. The UI shows the final text and the happy ^^ face; her drills bounce
-   (an emotion impulse into the physics).
+1. `commandbar.ts` → `Brain.prompt()` → `POST /prompt` with `Authorization: Bearer <token>`.
+2. `server.go`: Host check → CORS → token (constant time) → `Claude.Prompt()`.
+3. `claude.go` starts `claude -p ... --permission-mode manual ...` if needed
+   (one long-lived process = conversation memory), publishes
+   `status: thinking`, writes the user message to stdin.
+4. UI: "…" bubble, ahoge wiggle, eyes up.
+5. Claude streams `stream_event` → `text_delta` events → bubble fills, mouth flaps.
+6. Claude wants `Bash: npm test` → `control_request can_use_tool` → brain
+   publishes `permission_request` with the **full** input → Allow/Deny card.
+7. You click Allow → `POST /permission` → a channel wakes the waiting
+   goroutine → `control_response {"behavior":"allow"}`.
+8. `result` → `reply_done`; Python returns a mood; C# speaks the reply.
+9. Happy ^^ face; the drills bounce (an impulse into the physics).
 
 ## Permissions: the safety design
 
-Teto can run commands on your PC, so the design is "fail closed":
+Summary (full threat model in [SECURITY.md](SECURITY.md)):
 
-- **Claude Code runs with `--permission-mode manual`** and
-  `--permission-prompt-tool stdio`, so every action that needs approval
-  comes to the brain and then to your bubble. (Without `manual`, Claude
-  Code may start in `auto` mode and approve "safe" commands itself: see
-  [Found live](#found-live).)
-- **No answer = deny.** A request nobody answers in 5 minutes is denied
-  (`PermissionTimeout`). If Claude exits, all pending requests are denied.
-- **The brain only listens on 127.0.0.1** and **every request needs the
-  token**. Without the token, any web page you visit could `fetch()` your
-  localhost and tell Claude to run commands (cross-site request forgery).
-  The token is passed by environment variable, not command line, because
-  other programs can read process command lines.
-- **CORS allow-list**: only the Tauri origin and the Vite dev server may
-  read responses.
-- **Model text is never HTML**: the bubble sets `textContent`, so a reply
-  containing `<img onerror=...>` is shown as text, not run.
-
-## The UI: skin, animator, physics
-
-- **`skin.ts`** is the only code that knows SVG ids. It exposes
-  `pose(part, deg)`, `setEyes(state)`, `setMouth(state)`, `look(dx, dy)`,
-  `poseChain(chain, angles)`.
-- **`face.ts`** is pure decision logic: from the `Mind` (thinking?
-  talking? sleeping? current emotion?) it picks a face by priority
-  `sleeping > emotion > talking > thinking > neutral`.
-- **`animator.ts`** runs the `requestAnimationFrame` loop: blink timer,
-  breathing bob, smoothed head tilt (`approach()`, frame-rate independent),
-  waving, eye tracking of the cursor, and feeds the head's acceleration
-  into the physics.
-- **`physics.ts`** wraps the wasm module. See [PHYSICS.md](PHYSICS.md).
-
-Rendering choice: **inline SVG + attribute updates**, not canvas or a
-game engine. Each frame changes ~30 `transform` attributes; the browser
-repaints only what changed. Alternatives: Canvas/PixiJS (faster for many
-sprites, but you'd redraw everything every frame and lose the DOM's hit
-testing that click-through relies on), Live2D (beautiful, but a
-proprietary SDK and a rigged model).
+- Manual permission mode; every approval goes to your bubble, with the
+  complete command shown. **No answer = deny.**
+- Tools that would act without asking are disabled; Claude works in a
+  dedicated `~/TetoWorkspace`.
+- Every localhost service needs the token and a localhost `Host` header.
+- Model text is never HTML; the CSP blocks foreign scripts; skins are sanitized.
 
 ## Skins
 
-A skin is a folder in `skins/` with `manifest.json` + one SVG. The
+A skin is a folder in `assets/skins/` with `manifest.json` + one SVG. The
 manifest maps roles to element ids, so the animator never hard-codes art:
 
 | Manifest key | Meaning |
 | --- | --- |
 | `parts.head/armL/armR/ahoge` | element id + rotation pivot |
-| `eyes.groups`, `eyes.states` | each eye group contains `.eyes-<state>` children; exactly one is shown |
-| `eyes.look`, `lookRange` | the class of the iris group that slides toward the cursor, and how far (px) |
+| `eyes.groups`, `eyes.states` | each eye group has `.eyes-<state>` children; one is shown |
+| `eyes.look`, `lookRange` | the iris group that follows the cursor, and how far (px) |
 | `mouth.group`, `mouth.states` | `.mouth-<state>` children |
-| `chains[]` | `prefix-0 … prefix-(n-1)` **nested** `<g>`s, so rotating joint 2 carries 3..n along |
-| `physics` | stiffness, damping, falloff, gravity for the chains |
-| `expressions` | per face: eyes, mouth, blush, fx overlays, head tilt, ahoge angle, … |
+| `chains[]` | `prefix-0 … prefix-(n-1)`: **nested** `<g>`s, so rotating joint 2 carries 3..n |
+| `physics` | stiffness, damping, falloff, gravity |
+| `expressions` | per face: eyes, mouth, blush, effects, head tilt, ahoge angle, … |
 
-To make a new skin, copy `skins/teto-chibi`, redraw the SVG keeping the
-ids, and change `skin` in the config.
+To make a skin: copy `assets/skins/teto-chibi`, redraw the SVG keeping the
+ids, and change `skin` in `rust/shell/src/lib.rs`. Unsafe SVG markup is
+stripped on load.
 
 ## Patterns and principles used
 
-| Principle / pattern | Where |
+| Principle / pattern | Where (examples) |
 | --- | --- |
-| **Single Responsibility** | one module per job: `skin.ts` (SVG), `face.ts` (decisions), `animator.ts` (time), `bubble.ts` (text) |
-| **Publish/subscribe** | `brain/hub.go`: producers publish events, the SSE handler subscribes |
-| **Dependency injection** | `Server.Now` (clock), `Claude.Bin` (the tests inject a fake Claude), `Quirks` receives its API object |
-| **Functional core, imperative shell** | `face.ts`, `ParseRemind`, `analyze()`, `ReminderStore` are pure/testable; I/O lives at the edges |
-| **Graceful degradation** | no mood engine → neutral; no physics → still hair; no companion → silent; broken quirk → logged, others still load |
-| **Fail closed** | permissions default to deny on timeout or crash |
-| **Back-pressure by dropping** | `Hub.Publish` never blocks; a slow UI misses events rather than freezing the brain |
-| **Test double (fake)** | `brain_test.go`'s `TestMain` makes the test binary impersonate Claude Code |
-| **Atomic write** | `ReminderStore.save`: write a temp file, then move it over the real one |
+| **Single responsibility** | one job per module: `skin.ts`, `face.ts`, `hub.go`, `supervisor.rs`, `PipeListener.cs` |
+| **Publish/subscribe** | `go/brain/hub.go` |
+| **Dependency injection** | `Server.Now`, `Claude.Bin` (fake Claude in tests), quirk API object |
+| **Functional core, imperative shell** | `face.ts`, `analyze()`, `ReminderStore`, `Commands.Parse` |
+| **Composition root** | `main.go`, `main.ts`, `lib.rs: run` |
+| **Plugin architecture** | quirks, skins |
+| **Graceful degradation** | missing helpers, physics or quirks never stop Teto |
+| **Fail closed / least privilege / defense in depth** | see SECURITY.md |
+| **Back-pressure by dropping** | `Hub.Publish` never blocks |
+| **Test doubles** | fake Claude (`TestMain`), fake DOM (`sanitize.test.ts`) |
+| **Atomic write** | `ReminderStore.save` |
+| **RAII / deterministic cleanup** | Rust drop order, C# `IDisposable`, Go `defer`, Java try-with-resources |
 
 ## Found live
 
-Things learned by running against the real systems, each pinned by code or a test:
+Things learned by running against real systems, each pinned by code or a test:
 
 | Surprise | Fix | Pinned by |
 | --- | --- | --- |
-| `claude -p` ran `echo hi` **without asking** the host: the default starting permission mode can be `auto` | always pass `--permission-mode manual` | comment in `claude.go: args()`; live smoke test with Deny leaves no file |
-| On Windows a running child process **locks its working folder**, so tests couldn't delete their temp dir | `Claude.Close()` closes stdin and waits for exit; tests register it with `t.Cleanup` | `TestPermissionRoundTrip` (cleanup runs LIFO) |
-| Python crashed printing `✨`: Windows consoles default to `cp1252` | `sys.stdout.reconfigure(encoding="utf-8")` | `tools/smoke_brain.py` |
-| Headless Edge `--window-size=360,…` gave a **496 px** viewport; `--virtual-time-budget` hangs forever on a page with SSE + animation | the probe pins the viewport via DevTools `Emulation.setDeviceMetricsOverride` and uses real time | `tools/ui_probe.mjs` |
-| Node 24's `node --test test/` treats `test/` as a file | pass a glob: `"test/**/*.test.mjs"` | `physics/package.json` |
+| `claude -p` ran `echo hi` **without asking**: the default mode can be `auto` | `--permission-mode manual` | `TestClaudeArgsKeepSafetyFlags`; live Deny test |
+| A running child **locks its working folder** on Windows | `Claude.Close()`, LIFO `t.Cleanup` | `TestPermissionRoundTrip` |
+| Python crashed printing `✨` (`cp1252` console) | `sys.stdout.reconfigure(encoding="utf-8")` | `python/tools/*.py` |
+| Headless Edge viewport 496 px instead of 360; `--virtual-time-budget` hangs | DevTools `setDeviceMetricsOverride`, real time | `javascript/tools/ui_probe.mjs` |
+| `node --test test/` treated the folder as a file | glob pattern | `cpp/physics/package.json` |
+| Fresh clone: `wasm-ld` couldn't create `dist/physics.wasm` | `prebuild` creates `dist/` | `cpp/physics/package.json` |
+| Node can't strip TS **parameter properties** | explicit fields in Node-run files | `sanitize.test.ts` |
+| A freshly built `.exe` gave "Permission denied" from Git Bash for a moment (antivirus scan) | launch via PowerShell / retry | – |
+| **Smart App Control** blocks Cargo build scripts | turn it off to build Rust (re-enable later) | SECURITY.md |
+| Windows reserves **F12** for debuggers (`RegisterHotKey` docs) | tests use F9 | C and Rust hotkey tests |
+| Windows Forms test project must target `net10.0-windows` too | changed TFM | `Teto.Companion.Tests.csproj` |
 
 ## Trade-offs and known limits
 
-- **One prompt at a time.** A second prompt while she's busy gets `409`.
-  Fine for one person; queueing would be the next step.
-- **No restart supervision yet**: if the mood engine dies it's disabled
-  until the brain restarts. The Rust shell will supervise processes.
-- **Mood is a keyword lexicon**, not a model. It's instant and
-  explainable but misses sarcasm. Upgrade path: a small local sentiment
-  model behind the same JSON-lines protocol; nothing else changes.
-- **The Java service has no token**: it's loopback-only and can only
-  store reminders, so the risk is low, but any local program could add one.
-- **Physics is a game-feel model**, not a rigid-body simulation (see PHYSICS.md).
+- **One prompt at a time** (409 while busy).
+- **No automatic restart** of crashed helpers yet; the supervisor is where it would go.
+- **Mood is a keyword lexicon**: instant and explainable, misses sarcasm.
+- **Physics is game-feel**, not rigid-body dynamics ([cpp/docs/ARCHITECTURE.md](../cpp/docs/ARCHITECTURE.md)).
+- **Development layout**: the shell finds helpers relative to the repo;
+  a packaged release would bundle them as Tauri sidecars.
+- **Windows only**: the C module, job objects and named pipes are Win32.
 
 ## References
 
-**The big picture / patterns**
-- Martin Fowler, *Microservices* (and when not to use them): https://martinfowler.com/articles/microservices.html
-- Alistair Cockburn, *Hexagonal architecture*: https://alistair.cockburn.us/hexagonal-architecture/
-- Gary Bernhardt, *Functional core, imperative shell*: https://www.destroyallsoftware.com/screencasts/catalog/functional-core-imperative-shell
+**Patterns**
+- Martin Fowler, *Microservices*: <https://martinfowler.com/articles/microservices.html>
+- Alistair Cockburn, *Hexagonal architecture*: <https://alistair.cockburn.us/hexagonal-architecture/>
+- Gary Bernhardt, *Functional core, imperative shell*: <https://www.destroyallsoftware.com/screencasts/catalog/functional-core-imperative-shell>
+- Simon Brown, *Package by component and architecturally-aligned testing*: <https://www.codingthearchitecture.com/2015/03/08/package_by_component_and_architecturally_aligned_testing.html>
 
 **Links between languages**
-- HTML Standard, Server-sent events ✔: https://html.spec.whatwg.org/multipage/server-sent-events.html
-- MDN, `EventSource` (no custom headers; auto-reconnect): https://developer.mozilla.org/en-US/docs/Web/API/EventSource
-- Claude Code, run programmatically (`-p`, `stream-json`, `--include-partial-messages`, permission modes) ✔: https://code.claude.com/docs/en/headless
-- Claude Code CLI reference: https://code.claude.com/docs/en/cli-reference
-- Microsoft, Named pipes: https://learn.microsoft.com/en-us/windows/win32/ipc/named-pipes
-- MDN, WebAssembly: https://developer.mozilla.org/en-US/docs/WebAssembly
-
-**Security**
-- OWASP, Cross-Site Request Forgery: https://owasp.org/www-community/attacks/csrf
-- MDN, CORS: https://developer.mozilla.org/en-US/docs/Web/HTTP/CORS
-- Go, `crypto/subtle.ConstantTimeCompare`: https://pkg.go.dev/crypto/subtle#ConstantTimeCompare
-- Tauri, Windows custom-protocol origin `http://<scheme>.localhost` ✔: https://v2.tauri.app/release/tauri/v2.1.0/
-
-**UI**
-- MDN, `requestAnimationFrame`: https://developer.mozilla.org/en-US/docs/Web/API/Window/requestAnimationFrame
-- MDN, SVG `transform`: https://developer.mozilla.org/en-US/docs/Web/SVG/Attribute/transform
-- MDN, `pointer-events` (SVG values like `visiblePainted`): https://developer.mozilla.org/en-US/docs/Web/CSS/pointer-events
+- HTML Standard, Server-sent events ✔: <https://html.spec.whatwg.org/multipage/server-sent-events.html>
+- Claude Code, run programmatically ✔: <https://code.claude.com/docs/en/headless>
+- Tauri, calling Rust from the frontend: <https://v2.tauri.app/develop/calling-rust/>
+- The Rustonomicon, FFI: <https://doc.rust-lang.org/nomicon/ffi.html>
+- Microsoft, named pipes: <https://learn.microsoft.com/en-us/windows/win32/ipc/named-pipes>
+- MDN, WebAssembly: <https://developer.mozilla.org/en-US/docs/WebAssembly>
+- Microsoft, job objects: <https://learn.microsoft.com/en-us/windows/win32/procthread/job-objects>

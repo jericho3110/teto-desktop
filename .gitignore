@@ -1,33 +1,37 @@
-# build output
-brain/bin/
-physics/dist/
-app/dist/
-app/public/
-app/src-tauri/target/
-app/src-tauri/gen/
-reminders/out/
-reminders/out-test/
-companion/**/bin/
-companion/**/obj/
+# ---- build output ---------------------------------------------------
+go/brain/bin/
+cpp/physics/dist/
+typescript/ui/dist/
+typescript/ui/public/
+rust/shell/target/
+rust/shell/gen/
+java/reminders/out/
+java/reminders/out-test/
+csharp/**/bin/
+csharp/**/obj/
+c/**/build/
 *.exe
 *.dll
+*.lib
+*.obj
 *.wasm
 *.pdb
 
-# dependencies / environments
+# ---- dependencies / environments ------------------------------------
 node_modules/
 .venv/
 venv/
 __pycache__/
 *.pyc
 
-# secrets and local config
+# ---- secrets and local config ---------------------------------------
 .env
 .env.*
 *.pem
 *.key
+*.pfx
 
-# logs, OS and editor junk
+# ---- logs, OS and editor junk ---------------------------------------
 *.log
 Thumbs.db
 .DS_Store
@@ -35,5 +39,5 @@ desktop.ini
 .vscode/
 .idea/
 
-# runtime data (reminders file lives in ~/.teto by default, but just in case)
+# ---- runtime data ---------------------------------------------------
 *.tsv

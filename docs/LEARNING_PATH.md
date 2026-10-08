@@ -1,136 +1,130 @@
 # Learning path
 
-A reading order through Teto, from "one process" to "many languages
-talking". Each stage: what to read, the concepts, an exercise, and a
-self-check question. Budget about an evening per stage.
+A reading order through Teto, from "one pure function" to "nine
+languages talking". Each stage: what to read, the concepts, an exercise,
+and a self-check question. Budget about an evening per stage. The deep
+dives for each language are in `<language>/docs/CONCEPTS.md`.
 
 ## Contents
 
 1. [Stage 1: one pure function (Python)](#stage-1-one-pure-function-python)
 2. [Stage 2: a process as a function (pipes)](#stage-2-a-process-as-a-function-pipes)
-3. [Stage 3: the brain's server (Go)](#stage-3-the-brains-server-go)
-4. [Stage 4: driving Claude Code](#stage-4-driving-claude-code)
-5. [Stage 5: art as data (SVG + manifest)](#stage-5-art-as-data-svg--manifest)
-6. [Stage 6: the animator (TypeScript)](#stage-6-the-animator-typescript)
-7. [Stage 7: C++ in the browser (WebAssembly)](#stage-7-c-in-the-browser-webassembly)
-8. [Stage 8: personality as plugins (quirks)](#stage-8-personality-as-plugins-quirks)
-9. [References](#references)
+3. [Stage 3: an HTTP service (Java)](#stage-3-an-http-service-java)
+4. [Stage 4: the brain's server (Go)](#stage-4-the-brains-server-go)
+5. [Stage 5: driving Claude Code (Go)](#stage-5-driving-claude-code-go)
+6. [Stage 6: art as data (SVG + manifest)](#stage-6-art-as-data-svg--manifest)
+7. [Stage 7: the animator (TypeScript)](#stage-7-the-animator-typescript)
+8. [Stage 8: C++ in the browser (WebAssembly)](#stage-8-c-in-the-browser-webassembly)
+9. [Stage 9: personality as plugins (JavaScript)](#stage-9-personality-as-plugins-javascript)
+10. [Stage 10: talking to Windows (C)](#stage-10-talking-to-windows-c)
+11. [Stage 11: the shell and FFI (Rust)](#stage-11-the-shell-and-ffi-rust)
+12. [Stage 12: tray, toasts and voice (C#)](#stage-12-tray-toasts-and-voice-c)
+13. [Stage 13: thinking like an attacker](#stage-13-thinking-like-an-attacker)
+14. [References](#references)
 
 ## Stage 1: one pure function (Python)
 
-**Read:** `mood/mood.py: analyze()`, then `mood/test_mood.py: AnalyzeTest`.
-
-**Concepts:** a *pure function* (same input → same output, no I/O) is
-the easiest thing to test. Lexicons, negation handling, a saturating
-curve `x / (x + 1)` to squash any score into 0..1.
-
-**Exercise:** add an emotion `sleepy` (words: "tired", "yawn", "sleep").
-Add a test first, watch it fail, then make it pass.
-
-**Self-check:** why does `"It's not working yet."` come out `neutral` rather than `worried`?
+**Read:** `python/mood/mood.py: analyze()`, then `python/mood/test_mood.py: AnalyzeTest`.
+**Concepts:** pure functions, lexicons, negation, a saturating curve `x/(x+1)`.
+**Exercise:** add a `sleepy` emotion, test first.
+**Self-check:** why does `"It's not working yet."` come out `neutral`, not `worried`?
 
 ## Stage 2: a process as a function (pipes)
 
-**Read:** `mood.py: main()`, `ProtocolTest`, then `brain/services.go: MoodEngine`.
+**Read:** `mood.py: main()`, `ProtocolTest`, then `go/brain/services.go: MoodEngine`.
+**Concepts:** stdin/stdout as a protocol, JSON lines, buffering (`-u`), "always reply".
+**Exercise:** run `python -u python/mood/mood.py`, type `{"text": "yay"}`, then `oops`.
+**Self-check:** what would happen to the brain if `mood.py` printed nothing for bad input?
 
-**Concepts:** stdin/stdout as a protocol; *JSON lines* (one object per
-line, so the reader knows where a message ends); buffering (`python -u`,
-`flush=True`); why a strict "one request → one response" rule matters
-(the Go side holds a mutex and waits).
+## Stage 3: an HTTP service (Java)
 
-**Exercise:** run it by hand: `python -u mood/mood.py`, then type
-`{"text": "yay"}` and press Enter. Then type `oops` and see what happens.
+**Read:** `java/reminders/src/teto/reminders/ReminderStore.java`, then `ReminderServer.java`, then the test.
+**Concepts:** separating storage from transport, records, synchronized,
+virtual threads, atomic file writes, central error handling.
+**Exercise:** add `DELETE /reminders/{id}` with a test.
+**Self-check:** a web page can send a form POST to `127.0.0.1` without asking. Which line stops it here?
 
-**Self-check:** what would happen to the brain if `mood.py` printed
-nothing for invalid input?
+## Stage 4: the brain's server (Go)
 
-## Stage 3: the brain's server (Go)
+**Read:** `go/brain/main.go` → `server.go` → `hub.go`. Deep dive: [go/docs/CONCEPTS.md](../go/docs/CONCEPTS.md).
+**Concepts:** middleware, bearer tokens, CSRF, DNS rebinding, CORS, SSE, publish/subscribe.
+**Exercise:** add `GET /version`; decide whether it needs the token.
+**Self-check:** why `subtle.ConstantTimeCompare` instead of `==`, and why check for an empty token?
 
-**Read:** `brain/main.go` → `server.go: Routes, withAuth, withCORS, events` → `hub.go`.
+## Stage 5: driving Claude Code (Go)
 
-**Concepts:** middleware (a handler wrapping a handler), bearer tokens,
-CSRF and why localhost isn't automatically safe, CORS, Server-Sent
-Events, publish/subscribe, non-blocking sends with `select { default: }`.
+**Read:** `go/brain/claude.go`, then `brain_test.go: fakeClaude, TestPermissionRoundTrip`, then [PROTOCOL.md](PROTOCOL.md).
+**Concepts:** long-lived child processes, goroutines, channels + `select`, fail closed, test doubles.
+**Exercise:** run the brain and `python/tools/smoke_brain.py` with and without `--allow` in a scratch `-workdir`.
+**Self-check:** if you close Teto while a card is open, what does Claude receive, and which line decides?
 
-**Exercise:** add `GET /version` that returns `"0.1.0"`. Should it need
-the token? Write the test.
+## Stage 6: art as data (SVG + manifest)
 
-**Self-check:** why is the token compared with `subtle.ConstantTimeCompare` instead of `==`?
+**Read:** `python/skin_gen/gen_teto.py`, open `assets/skins/teto-chibi/teto.svg`, then `manifest.json`.
+**Concepts:** SVG painting order, nested `<g>` transforms, a manifest as a contract.
+**Exercise:** give her a hair clip inside `#head`; regenerate; check it moves with her head.
+**Self-check:** why are the drill segments nested instead of siblings?
 
-## Stage 4: driving Claude Code
+## Stage 7: the animator (TypeScript)
 
-**Read:** `brain/claude.go` top to bottom, then `brain_test.go: fakeClaude, TestPermissionRoundTrip`.
-Then [PROTOCOL.md](PROTOCOL.md#brain--claude-code-stream-json).
+**Read:** `typescript/ui/src/face.ts` + test, `animator.ts`, `skin.ts`, `main.ts`. Deep dive: [typescript/docs/CONCEPTS.md](../typescript/docs/CONCEPTS.md).
+**Concepts:** deciding vs doing, `requestAnimationFrame`, `exp(-rate·dt)` smoothing, discriminated unions.
+**Exercise:** make her look at the command bar while you type.
+**Self-check:** why does `current += (target-current)*0.1` per frame differ at 144 Hz vs 60 Hz?
 
-**Concepts:** long-lived child processes, goroutines reading pipes,
-channels as "a box one goroutine waits on", timeouts with `select`,
-fail-closed security, test doubles (the test binary pretends to be Claude).
+## Stage 8: C++ in the browser (WebAssembly)
 
-**Exercise:** run the brain and `tools/smoke_brain.py` once with Deny and
-once with `--allow` (in a scratch `-workdir`!). Compare the events.
+**Read:** [cpp/docs/ARCHITECTURE.md](../cpp/docs/ARCHITECTURE.md), `cpp/physics/src/*`, `typescript/ui/src/physics.ts`.
+**Concepts:** cross-compiling, freestanding code, `extern "C"`, semi-implicit Euler.
+**Exercise:** the exercises at the end of cpp/docs/ARCHITECTURE.md.
+**Self-check:** what would the `.wasm` need to import if you used `std::sin`?
 
-**Self-check:** if you close Teto while a permission card is open, what
-does Claude receive, and which line of code decides that?
+## Stage 9: personality as plugins (JavaScript)
 
-## Stage 5: art as data (SVG + manifest)
+**Read:** `typescript/ui/src/quirks.ts`, then `javascript/quirks/*.js`.
+**Concepts:** plugin architecture, dynamic `import()`, closures as private state, fault isolation.
+**Exercise:** write `javascript/quirks/coffee.js`.
+**Self-check:** why does a quirk get an API object instead of importing `animator.ts`?
 
-**Read:** `tools/skin_gen/gen_teto.py`, open `skins/teto-chibi/teto.svg`
-in a browser, then `manifest.json`.
+## Stage 10: talking to Windows (C)
 
-**Concepts:** SVG painting order (later = on top: that's why the arms
-had to move after the torso), nested `<g>` transforms, the manifest as
-the contract between art and code.
+**Read:** `c/win32hooks/include/teto_win32.h`, then `src/teto_win32.c`, then the test. Deep dive: [c/docs/CONCEPTS.md](../c/docs/CONCEPTS.md).
+**Concepts:** the C ABI, out-parameters, callbacks with `void *user`,
+message loops, thread joins, job objects, unsigned wraparound.
+**Exercise:** add `teto_foreground_title` safely (buffer + capacity).
+**Self-check:** why must `teto_hotkey_stop` join the thread instead of only posting `WM_QUIT`?
 
-**Exercise:** give her a hair clip: draw it in the generator inside
-`#head`, regenerate, and check it moves with her head.
+## Stage 11: the shell and FFI (Rust)
 
-**Self-check:** why are the drill segments *nested* instead of siblings?
+**Read:** `rust/shell/src/native.rs`, `supervisor.rs`, `lib.rs`, `build.rs`, `tauri.conf.json`. Deep dive: [rust/docs/CONCEPTS.md](../rust/docs/CONCEPTS.md).
+**Concepts:** ownership, `unsafe` with written safety arguments, trampolines,
+`Mutex` statics, build scripts, Tauri commands/events/capabilities, CSP.
+**Exercise:** add a tray-free "toggle always-on-top" command and give it the narrowest capability.
+**Self-check:** in `hotkey_stop`, why is the closure freed only *after* `teto_hotkey_stop()` returns?
 
-## Stage 6: the animator (TypeScript)
+## Stage 12: tray, toasts and voice (C#)
 
-**Read:** `app/src/face.ts` + `face.test.ts`, then `animator.ts`, `skin.ts`, `main.ts`.
+**Read:** `csharp/Companion/Commands.cs` + tests, `PipeListener.cs`, `TrayApp.cs`, `Program.cs`. Deep dive: [csharp/docs/CONCEPTS.md](../csharp/docs/CONCEPTS.md).
+**Concepts:** records, nullable references, pattern matching, async +
+cancellation, `IDisposable`, UI-thread marshalling, named-pipe security.
+**Exercise:** add a `mute` command end to end (Go sends it, C# handles it).
+**Self-check:** why does `Handle` run via `SynchronizationContext.Post`?
 
-**Concepts:** separating *deciding* (pure `face.ts`) from *doing*
-(`animator.ts`); `requestAnimationFrame`; frame-rate-independent smoothing
-with `exp(-rate·dt)`; discriminated unions for events.
+## Stage 13: thinking like an attacker
 
-**Exercise:** make her look at the command bar while you type (hint:
-`Animator.cursor`).
-
-**Self-check:** why would `current += (target - current) * 0.1` per frame
-behave differently on a 144 Hz monitor than on 60 Hz?
-
-## Stage 7: C++ in the browser (WebAssembly)
-
-**Read:** [PHYSICS.md](PHYSICS.md), `physics/src/*`, `app/src/physics.ts`.
-
-**Concepts:** cross-compiling, freestanding code (no standard library),
-name mangling and `extern "C"`, semi-implicit Euler.
-
-**Exercise:** do the exercises at the end of PHYSICS.md.
-
-**Self-check:** the `.wasm` imports nothing. What would it need to import
-if you used `std::sin`?
-
-## Stage 8: personality as plugins (quirks)
-
-**Read:** `app/src/quirks.ts`, then the files in `quirks/`.
-
-**Concepts:** plugin architecture (a small API object passed to each
-plugin), dynamic `import()`, isolating failures with `try/catch` per plugin.
-
-**Exercise:** write `quirks/coffee.js`: between 9 and 10 AM, once a day,
-she asks if you've had coffee.
-
-**Self-check:** why does a quirk receive an API object instead of
-importing `animator.ts` directly?
+**Read:** [SECURITY.md](SECURITY.md), especially the review table.
+**Exercise:** pick one finding, revert its fix locally, and watch its regression test fail. Then restore it.
+**Self-check:** list every way a *web page* could try to make Teto do something, and the defense that stops each.
 
 ## References
 
-- Python `subprocess` and pipes: https://docs.python.org/3/library/subprocess.html
-- JSON Lines: https://jsonlines.org/
-- Go by Example (goroutines, channels, select, timeouts): https://gobyexample.com/
-- MDN, Using server-sent events: https://developer.mozilla.org/en-US/docs/Web/API/Server-sent_events/Using_server-sent_events
-- MDN, SVG tutorial: https://developer.mozilla.org/en-US/docs/Web/SVG/Tutorial
-- Freya Holmér, *Lerp smoothing is broken* (frame-rate-independent smoothing): https://www.youtube.com/watch?v=LSNQuFEDOyQ
-- Martin Fowler, *Test Double*: https://martinfowler.com/bliki/TestDouble.html
+- Python `subprocess`: <https://docs.python.org/3/library/subprocess.html>
+- JSON Lines: <https://jsonlines.org/>
+- Go by Example: <https://gobyexample.com/>
+- MDN, server-sent events: <https://developer.mozilla.org/en-US/docs/Web/API/Server-sent_events/Using_server-sent_events>
+- MDN, SVG tutorial: <https://developer.mozilla.org/en-US/docs/Web/SVG/Tutorial>
+- The Rust Book: <https://doc.rust-lang.org/book/>
+- Microsoft, C# guide: <https://learn.microsoft.com/en-us/dotnet/csharp/>
+- Freya Holmér, *Lerp smoothing is broken*: <https://www.youtube.com/watch?v=LSNQuFEDOyQ>
+- Martin Fowler, *Test Double*: <https://martinfowler.com/bliki/TestDouble.html>
+- OWASP Top Ten: <https://owasp.org/www-project-top-ten/>

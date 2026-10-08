@@ -5,6 +5,7 @@ change the other and this file.
 
 ## Contents
 
+1. [UI ↔ Rust shell (Tauri)](#ui--rust-shell-tauri)
 1. [UI ↔ brain (HTTP + SSE)](#ui--brain-http--sse)
 2. [Brain ↔ Claude Code (stream-json)](#brain--claude-code-stream-json)
 3. [Brain ↔ mood engine](#brain--mood-engine)
@@ -12,23 +13,38 @@ change the other and this file.
 5. [Brain → companion](#brain--companion)
 6. [References](#references)
 
+## UI ↔ Rust shell (Tauri)
+
+| Direction | Name | Payload |
+| --- | --- | --- |
+| UI → Rust (command) | `invoke("get_config")` | returns `{"brainUrl": "http://127.0.0.1:47800", "token": "<64 hex>", "skin": "teto-chibi"}` |
+| Rust → UI (event) | `native://cursor` | `{"x": 120.5, "y": 300}`: cursor in window CSS pixels, sent ~30×/s only when it moved |
+| Rust → UI (event) | `native://idle` | `{"ms": 4200}`: time since the last keyboard/mouse input, every 2 s |
+| Rust → UI (event) | `native://hotkey` | none: Ctrl+Alt+Space was pressed |
+
+The UI also calls Tauri's window API directly (allowed by
+`rust/shell/capabilities/default.json`): `startDragging`, `setFocus`,
+`setIgnoreCursorEvents`, `outerPosition`, `scaleFactor`, `onMoved`.
+
 ## UI ↔ brain (HTTP + SSE)
 
-Base URL `http://127.0.0.1:47800`. Every endpoint except `/health` needs
-the token: header `Authorization: Bearer <token>`, or `?token=` (only
-needed by `/events`, because `EventSource` can't set headers).
+Base URL `http://127.0.0.1:47800`. Every request must have
+`Host: 127.0.0.1` or `localhost` (else `403`), and every endpoint except
+`/health` needs the token: header `Authorization: Bearer <token>`.
+Only `/events` may pass it as `?token=` instead, because `EventSource`
+can't set headers.
 
 | Method + path | Body | Response |
 | --- | --- | --- |
 | `GET /health` | – | `200 ok` (no token needed) |
 | `GET /events` | – | `text/event-stream`, one `data: <json>` per event |
-| `POST /prompt` | `{"text": "..."}` | `202` accepted · `409` busy · `400` empty · `401` bad token |
+| `POST /prompt` | `{"text": "..."}` (max 1 MiB) | `202` accepted · `409` busy · `400` empty · `401` bad token · `403` bad Host |
 | `POST /permission` | `{"id": "...", "allow": true}` | `204` · `404` unknown/expired id |
 | `POST /cancel` | – | `204` (sends an `interrupt` to Claude) |
 
 Text starting with `/remind` is handled by the brain itself:
 `/remind 10m text`, `/remind 2h text`, `/remind 17:30 text` (today, or
-tomorrow if already past).
+tomorrow if already past). Delays: 1 minute to 7 days; text: at most 500 characters.
 
 ### Events (brain → UI)
 
@@ -37,13 +53,13 @@ tomorrow if already past).
 | `status` | `state`: `"thinking"` \| `"idle"` | a prompt starts / finishes (or Claude exits) |
 | `text_delta` | `text` | each streamed chunk of the reply |
 | `tool_use` | `tool`, `summary` | Claude decided to call a tool |
-| `permission_request` | `id`, `tool`, `summary` | Claude needs approval: show Allow/Deny |
+| `permission_request` | `id`, `tool`, `summary` (≤160 chars, for status lines), `detail` (the **complete** input: shown on the card) | Claude needs approval: show Allow/Deny |
 | `permission_expired` | `id` | nobody answered in 5 min; it was denied |
 | `reply_done` | `text`, `is_error` | the final reply (authoritative full text) |
 | `mood` | `emotion`, `intensity` (0..1) | right after `reply_done` |
 | `reminder` | `text` | a reminder came due |
 
-Real example, recorded from `tools/smoke_brain.py` (denying a Bash call):
+Real example, recorded with `python/tools/smoke_brain.py` (denying a Bash call; recorded before `detail` was added):
 
 ```json
 {"state": "thinking", "type": "status"}
@@ -59,11 +75,15 @@ Real example, recorded from `tools/smoke_brain.py` (denying a Bash call):
 
 Started as (see `claude.go: args()`):
 
-```
+```text
 claude -p --input-format stream-json --output-format stream-json --verbose
           --include-partial-messages --permission-prompt-tool stdio
-          --permission-mode manual --append-system-prompt "<persona>" [--model X]
+          --permission-mode manual
+          --disallowedTools RemoteTrigger,CronCreate,CronDelete,SendUserFile,PushNotification
+          --append-system-prompt "<persona>" [--model X]
 ```
+
+Working folder: `-workdir`, default `~/TetoWorkspace`.
 
 | Flag | Why |
 | --- | --- |
@@ -73,6 +93,7 @@ claude -p --input-format stream-json --output-format stream-json --verbose
 | `--include-partial-messages` | adds `stream_event` lines with token-by-token `text_delta`s |
 | `--permission-prompt-tool stdio` | permission requests come to *us* as `control_request`s |
 | `--permission-mode manual` | otherwise the starting mode may be `auto` and approve things itself |
+| `--disallowedTools ...` | tools that would act without a prompt even in manual mode (one comma-joined value: the flag is variadic) |
 | `--append-system-prompt` | adds Teto's persona while keeping Claude Code's own system prompt |
 
 **We write** (one JSON object per line):
@@ -96,17 +117,17 @@ claude -p --input-format stream-json --output-format stream-json --verbose
 | `control_request` | `request.subtype == "can_use_tool"`: `request_id`, `request.tool_name`, `request.input` |
 | `result` | `result` (final text), `is_error` |
 
-Verified against Claude Code 2.1.268 with `tools/smoke_brain.py`
-(both Allow and Deny). The `can_use_tool` / `control_response` shapes are
+Verified against Claude Code 2.1.268 with `python/tools/smoke_brain.py`
+(both Allow and Deny, and the disallowed tools). The `can_use_tool` / `control_response` shapes are
 the ones the official Agent SDKs use; the public docs describe the SDK
 callbacks, not the raw wire format, so if a future version changes them,
 the smoke test is how you'll notice.
 
 ## Brain ↔ mood engine
 
-`python -u mood/mood.py`, one request line → exactly one response line:
+`python -u python/mood/mood.py`, one request line → exactly one response line:
 
-```
+```text
 → {"text": "Done! All 12 tests passed."}
 ← {"emotion": "happy", "intensity": 0.67}
 ```
@@ -117,10 +138,12 @@ still gets a (neutral) reply, so the brain never waits forever.
 ## Brain → reminder service
 
 `http://127.0.0.1:47801` (Java). Requests are form-encoded, responses JSON.
+Every request needs `Authorization: Bearer <token>` (else `401`) and a
+localhost `Host` (else `403`). Bodies over 8 KB get `413`.
 
 | Request | Response |
 | --- | --- |
-| `POST /reminders` `at=<unix ms>&text=<text>` | `201 {"id":"…","at":…,"text":"…"}` · `400` bad input |
+| `POST /reminders` `at=<unix ms>&text=<text>` | `201 {"id":"…","at":…,"text":"…"}` · `400` bad input or text over 500 characters |
 | `GET /reminders` | `200 [ … ]` |
 | `POST /due` | `200 [ due reminders ]`, which are removed: each fires once |
 
@@ -129,7 +152,10 @@ The brain polls `/due` every 15 s.
 ## Brain → companion
 
 Named pipe `\\.\pipe\teto-companion` (C#). The brain connects, writes one
-JSON line, disconnects. If the pipe doesn't exist, nothing happens.
+JSON line, disconnects. If the pipe doesn't exist, nothing happens. Only
+processes of the same user can connect. Unknown commands, non-string
+fields and lines over 16 KB are ignored; text is clipped to 1000
+characters, titles to 64.
 
 ```json
 {"cmd": "speak",  "text": "Done! All tests pass."}
@@ -139,16 +165,16 @@ JSON line, disconnects. If the pipe doesn't exist, nothing happens.
 ## References
 
 **HTTP / SSE**
-- HTML Standard, Server-sent events (`data:` lines, blank-line separator, comments starting with `:`) ✔: https://html.spec.whatwg.org/multipage/server-sent-events.html
-- RFC 6750, Bearer token usage: https://www.rfc-editor.org/rfc/rfc6750
-- Go `net/http` routing patterns (`"POST /prompt"`, Go 1.22+): https://pkg.go.dev/net/http#hdr-Patterns-ServeMux
+- HTML Standard, Server-sent events (`data:` lines, blank-line separator, comments starting with `:`) ✔: <https://html.spec.whatwg.org/multipage/server-sent-events.html>
+- RFC 6750, Bearer token usage: <https://www.rfc-editor.org/rfc/rfc6750>
+- Go `net/http` routing patterns (`"POST /prompt"`, Go 1.22+): <https://pkg.go.dev/net/http#hdr-Patterns-ServeMux>
 
 **Claude Code**
-- Run Claude Code programmatically ✔: https://code.claude.com/docs/en/headless
-- CLI reference: https://code.claude.com/docs/en/cli-reference
-- Agent SDK, handling permissions / user input: https://code.claude.com/docs/en/agent-sdk/user-input
+- Run Claude Code programmatically ✔: <https://code.claude.com/docs/en/headless>
+- CLI reference: <https://code.claude.com/docs/en/cli-reference>
+- Agent SDK, handling permissions / user input: <https://code.claude.com/docs/en/agent-sdk/user-input>
 
 **Others**
-- Python `-u` (unbuffered output): https://docs.python.org/3/using/cmdline.html#cmdoption-u
-- HTML, `application/x-www-form-urlencoded`: https://url.spec.whatwg.org/#application/x-www-form-urlencoded
-- Microsoft, Named pipe names (`\\.\pipe\name`): https://learn.microsoft.com/en-us/windows/win32/ipc/pipe-names
+- Python `-u` (unbuffered output): <https://docs.python.org/3/using/cmdline.html#cmdoption-u>
+- HTML, `application/x-www-form-urlencoded`: <https://url.spec.whatwg.org/#application/x-www-form-urlencoded>
+- Microsoft, Named pipe names (`\\.\pipe\name`): <https://learn.microsoft.com/en-us/windows/win32/ipc/pipe-names>
