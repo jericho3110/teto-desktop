@@ -154,7 +154,7 @@ non-commercial fan project. Skins are swappable: see
 ## License
 
 [MIT](LICENSE) for the code. The Kasane Teto character belongs to TWINDRILL;
-the MIT license does not grant any rights to the character.
+the MIT license does not grant any rights to the character. See [NOTICE.md](NOTICE.md).
 
 ## References
 
