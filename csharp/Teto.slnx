@@ -1,0 +1,8 @@
+<Solution>
+  <Folder Name="/Companion.Tests/">
+    <Project Path="Companion.Tests/Teto.Companion.Tests.csproj" />
+  </Folder>
+  <Folder Name="/Companion/">
+    <Project Path="Companion/Teto.Companion.csproj" />
+  </Folder>
+</Solution>
