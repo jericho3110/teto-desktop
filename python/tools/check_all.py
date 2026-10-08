@@ -80,6 +80,11 @@ def env_with_tools() -> dict[str, str]:
     env = dict(os.environ)
     extra = [p for p in EXTRA_PATHS if Path(p).exists()]
     env["PATH"] = os.pathsep.join([*extra, env.get("PATH", "")])
+    # Rust build output goes outside OneDrive: it's several GB, and OneDrive
+    # folders make some build scripts (autocfg) think they can't write (found live).
+    local = os.environ.get("LOCALAPPDATA")
+    if local and "CARGO_TARGET_DIR" not in env:
+        env["CARGO_TARGET_DIR"] = str(Path(local) / "Teto" / "cargo-target")
     return env
 
 

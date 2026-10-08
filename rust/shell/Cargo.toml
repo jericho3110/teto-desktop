@@ -1,0 +1,30 @@
+[package]
+name = "teto-shell"
+version = "0.1.0"
+description = "Teto's desktop window: a transparent, always-on-top Tauri shell"
+edition = "2021"
+publish = false
+
+[lib]
+# The library holds the app; main.rs only calls teto_shell_lib::run().
+# The `_lib` suffix keeps its name different from the binary's, which
+# avoids a Windows-only Cargo filename clash (rust-lang/cargo#8519).
+name = "teto_shell_lib"
+crate-type = ["staticlib", "cdylib", "rlib"]
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+cc = "1"           # compiles ../../c/win32hooks with MSVC (or clang-cl) and links it in
+
+[dependencies]
+tauri = { version = "2", features = [] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+getrandom = "0.3"  # OS randomness for the shared token; Rust's std has no RNG
+
+[profile.release]
+codegen-units = 1
+lto = true
+opt-level = 3
+panic = "abort"
+strip = true
