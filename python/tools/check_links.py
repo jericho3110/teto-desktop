@@ -56,8 +56,26 @@ def check(url: str) -> tuple[str, str]:
     return url, "DEAD"
 
 
+LOCAL = re.compile(r"\]\((?!https?://|mailto:|#)([^)\s#]+)(?:#[^)]*)?\)")
+
+
+def check_local_links() -> int:
+    """Relative links between docs ([x](../docs/Y.md)) must point at files that exist."""
+    broken = 0
+    for md in ROOT.rglob("*.md"):
+        if SKIP_DIRS & set(md.relative_to(ROOT).parts):
+            continue
+        text = INLINE_CODE.sub("", FENCE.sub("", md.read_text(encoding="utf-8")))
+        for target in LOCAL.findall(text):
+            if not (md.parent / target).exists():
+                broken += 1
+                print(f"BROKEN local link {target}  ({md.relative_to(ROOT)})")
+    return broken
+
+
 def main() -> int:
     sys.stdout.reconfigure(encoding="utf-8")
+    broken_local = check_local_links()
     links = find_links()
     with ThreadPoolExecutor(max_workers=8) as pool:
         results = sorted(pool.map(check, links))
@@ -66,8 +84,8 @@ def main() -> int:
         if not status.startswith("ok"):
             print(f"{status:12} {url}  ({', '.join(sorted(set(links[url])))})")
             dead += status.startswith("DEAD")
-    print(f"{len(results)} links checked, {dead} dead")
-    return 1 if dead else 0
+    print(f"{len(results)} links checked, {dead} dead; {broken_local} broken local links")
+    return 1 if dead or broken_local else 0
 
 
 if __name__ == "__main__":

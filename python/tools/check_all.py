@@ -17,6 +17,7 @@ import os
 import shutil
 import subprocess
 import sys
+import tempfile
 import time
 from pathlib import Path
 
@@ -64,7 +65,10 @@ CHECKS: dict[str, tuple[str, list[list[str]]]] = {
     ]),
     "csharp": ("csharp", [
         ["dotnet", "test", "Teto.slnx", "--nologo"],
-        ["dotnet", "build", "Companion", "-c", "Release", "--nologo"],
+        # Build into a temp folder: this only verifies it compiles, and a running
+        # Teto locks bin/Release/TetoCompanion.exe (found live).
+        ["dotnet", "build", "Companion", "-c", "Release", "--nologo",
+         "-o", str(Path(tempfile.gettempdir()) / "teto-check-companion")],
     ]),
     "rust": ("rust/shell", [
         ["cargo", "fmt", "--check"],
