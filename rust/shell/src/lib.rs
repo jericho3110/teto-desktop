@@ -1,6 +1,7 @@
 //! Teto's desktop shell: one transparent, always-on-top window that shows
 //! the TypeScript UI, plus the native glue the webview can't do itself.
 
+mod controls;
 mod native;
 mod supervisor;
 
@@ -61,15 +62,21 @@ pub fn run() {
     let app = tauri::Builder::default()
         .manage(config) // shared state: commands receive it as tauri::State<Config>
         .manage(Mutex::new(services))
-        .invoke_handler(tauri::generate_handler![get_config])
+        .invoke_handler(tauri::generate_handler![
+            get_config,
+            controls::quit_app,
+            controls::hide_window
+        ])
         .setup(|app| {
             let handle = app.handle().clone();
+            controls::build_tray(&handle)?;
             spawn_native_pollers(handle.clone());
             let hotkey_handle = handle.clone();
             let ok = native::hotkey_start(
                 native::MOD_CONTROL | native::MOD_ALT,
                 native::VK_SPACE,
                 move || {
+                    controls::show(&hotkey_handle); // also brings her back if hidden
                     let _ = hotkey_handle.emit("native://hotkey", ());
                 },
             );

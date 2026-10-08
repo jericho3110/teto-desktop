@@ -95,7 +95,9 @@ cargo install cargo-audit --locked
 
 ## Using her
 
-Click Teto (or press **Ctrl+Alt+Space**) to open the command bar. Drag her
+Click Teto (or press **Ctrl+Alt+Space**) to open the command bar. **Right-click her** for
+the menu (Talk, Hide, **Quit Teto**); her **tray icon** (her face, next to the clock)
+shows/hides her on left-click and has **Quit Teto** on right-click. Drag her
 anywhere (watch the drills swing). `/remind 10m stretch` sets a reminder.
 Every action Claude wants to take shows up as an **Allow / Deny** card with
 the full command. Claude works in `~/TetoWorkspace`. Right-click the tray

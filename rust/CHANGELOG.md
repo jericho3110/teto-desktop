@@ -5,6 +5,9 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versions follo
 ## [Unreleased]
 
 ### Added
+- Controls: a Teto tray icon (left-click show/hide, right-click menu with
+  Quit Teto) and `quit_app` / `hide_window` commands; the hotkey also shows
+  her when hidden. Before this the window had no way to exit.
 - `supervisor::Layout`: dev vs installed helper locations; the dev paths
   (`env!`) are compiled only into debug builds, so release binaries contain
   no local folder paths. Skips the companion when the .NET runtime is missing.

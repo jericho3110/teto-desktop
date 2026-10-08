@@ -4,6 +4,11 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versions follo
 
 ## [Unreleased]
 
+### Changed
+- Tray menu says what it is ("voice & notifications") and that turning it
+  off leaves Teto running (it used to say "Quit companion", which looked
+  like quitting Teto).
+
 ### Added
 - Teto's voice: babble from her official UTAU voicebank (downloaded by the
   user, never bundled), kana spoken as syllables, crossfades, gentle pitch

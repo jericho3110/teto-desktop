@@ -6,6 +6,7 @@ import { getCurrentWindow } from "@tauri-apps/api/window";
 import { Animator } from "./animator";
 import { Brain } from "./brain";
 import { Bubble } from "./bubble";
+import { ContextMenu } from "./menu";
 import { CommandBar } from "./commandbar";
 import { FxLayer } from "./fxlayer";
 import { Effects, HairPhysics, loadPhysics } from "./physics";
@@ -133,6 +134,29 @@ async function main() {
     animator.poke();
     bar.toggle();
     quirks.emit("poke");
+  });
+
+  // ---- right-click menu: the control GUI (quit, hide, talk) ----------------
+  const menu = new ContextMenu(document.querySelector<HTMLElement>("#menu")!);
+  const quit = () => {
+    if (!isTauri()) {
+      bubble.say("(Quit works in the desktop app.)");
+      return;
+    }
+    bubble.say("See you later~ 👋", 3000);
+    animator.wave(1200);
+    animator.emote("happy", 0.8);
+    // Let her wave goodbye, then Rust exits: helpers are stopped in RunEvent::Exit.
+    window.setTimeout(() => void invoke("quit_app"), 1100);
+  };
+  document.addEventListener("contextmenu", (e) => {
+    e.preventDefault(); // no browser menu ("Reload", "Inspect"…) in the app
+    if (!(e.target instanceof Element) || !e.target.closest("#character")) return;
+    menu.open(e.clientX, e.clientY, [
+      { label: "💬  Talk to Teto", action: () => bar.show() },
+      { label: "🙈  Hide (tray icon brings her back)", action: () => isTauri() && void invoke("hide_window") },
+      { label: "👋  Quit Teto", action: quit },
+    ]);
   });
 
   // ---- native events from Rust + the C module ------------------------------

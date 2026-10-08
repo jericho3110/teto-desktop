@@ -25,6 +25,7 @@ Every TypeScript (and browser) concept and principle in `typescript/ui/`.
 19. [Principles applied](#19-principles-applied)
 20. [Exercises](#20-exercises)
 - [Typed arrays over WebAssembly memory; canvas drawing](#typed-arrays-over-webassembly-memory-canvas-drawing)
+- [The right-click menu](#the-right-click-menu)
 21. [References](#references)
 
 ## 1. What TypeScript adds to JavaScript
@@ -261,6 +262,18 @@ that satisfies the `SanitizableElement` interface (a test double).
 - The canvas has `pointer-events: none`, so it never catches the mouse.
 - `loadPhysics()` loads the module once; `HairPhysics` and `Effects` share
   its exports (**composition**: two small classes over one resource).
+
+## The right-click menu
+
+`src/menu.ts` + the `contextmenu` listener in `main.ts`:
+
+- `contextmenu` is the browser's right-click event; `e.preventDefault()`
+  stops the built-in menu ("Reload", "Inspect"), which an app shouldn't show.
+- Menu items are **data** (`{ label, action }`), so adding a control is one line.
+- Labels go in via `textContent` (never HTML).
+- `getBoundingClientRect()` + `Math.min` keeps the menu inside the window.
+- Quit is **graceful**: she says goodbye and waves, then `invoke("quit_app")`
+  after 1.1 s; Rust stops every helper on exit.
 
 ## References
 

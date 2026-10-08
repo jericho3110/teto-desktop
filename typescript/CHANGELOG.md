@@ -10,6 +10,8 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versions follo
   handlers, `foreignObject`, links and external `url()` are removed.
 
 ### Added
+- Right-click menu on Teto: Talk, Hide, Quit (she waves goodbye first);
+  the browser's own context menu is suppressed.
 - Particle layer: `Effects` reads the C++ particle arrays through typed-array
   views (zero copy) and `FxLayer` paints them on a canvas; effects start
   and stop when her face changes. One wasm instance serves hair + particles.

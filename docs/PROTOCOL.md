@@ -17,6 +17,8 @@ change the other and this file.
 
 | Direction | Name | Payload |
 | --- | --- | --- |
+| UI → Rust (command) | `invoke("quit_app")` | none: exits; Rust stops every helper in `RunEvent::Exit` |
+| UI → Rust (command) | `invoke("hide_window")` | none: hides the window; the tray icon or the hotkey shows it again |
 | UI → Rust (command) | `invoke("get_config")` | returns `{"brainUrl": "http://127.0.0.1:47800", "token": "<64 hex>", "skin": "teto-chibi"}` |
 | Rust → UI (event) | `native://cursor` | `{"x": 120.5, "y": 300}`: cursor in window CSS pixels, sent ~30×/s only when it moved |
 | Rust → UI (event) | `native://idle` | `{"ms": 4200}`: time since the last keyboard/mouse input, every 2 s |

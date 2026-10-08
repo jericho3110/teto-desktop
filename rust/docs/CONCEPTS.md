@@ -24,6 +24,7 @@ FFI bridge to C, and the process supervisor.
 17. [Principles applied](#17-principles-applied)
 18. [Exercises](#18-exercises)
 - [RAII over C memory: ForegroundWindow](#raii-over-c-memory-foregroundwindow)
+- [Controls: the tray icon and quit/hide commands](#controls-the-tray-icon-and-quithide-commands)
 19. [References](#references)
 
 ## 1. Crates, modules and Cargo
@@ -242,6 +243,20 @@ Rust's memory rules guarding someone else's memory (more in
 | `CStr::from_ptr(..).to_str()` | C string → `&str`, invalid UTF-8 becomes `""` |
 | borrowed → owned | `fg.app().to_owned()` before `fg` is dropped |
 | `#[cfg_attr(not(test), allow(dead_code))]` | `title()` exists for tests/learning, never sent to the UI |
+
+## Controls: the tray icon and quit/hide commands
+
+`src/controls.rs` (added after a user found there was no way to exit):
+
+| Concept | Code |
+| --- | --- |
+| a Cargo **feature** | `tauri = { features = ["tray-icon"] }`: optional parts of a crate are compiled only when asked for |
+| builder pattern | `TrayIconBuilder::with_id(...).tooltip(...).menu(...).build(app)?` |
+| `?` in `setup` | `controls::build_tray(&handle)?;`: an error aborts startup with a message instead of a half-working app |
+| `match` on a string id | `match event.id.as_ref() { "quit" => app.exit(0), ... }` |
+| `if let` with a struct pattern | matching `TrayIconEvent::Click { button: MouseButton::Left, button_state: MouseButtonState::Up, .. }`; `..` ignores the other fields |
+| graceful exit | `app.exit(0)` → `RunEvent::Exit` in `lib.rs` → hotkey thread joined, helpers stopped |
+| custom commands exposed to the UI | `quit_app`, `hide_window` in `generate_handler!` |
 
 ## References
 

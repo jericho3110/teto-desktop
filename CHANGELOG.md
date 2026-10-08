@@ -7,6 +7,21 @@ Workspace-level changes. Each language folder has its own
 
 ## [Unreleased]
 
+## [0.1.1] - 2026-10-08
+
+### Fixed
+- There was no way to quit Teto except Task Manager: added her tray icon and a
+  right-click menu (Talk, Hide, Quit). The companion's tray menu no longer looks
+  like it quits Teto.
+
+### Added
+
+- Control GUI v1: Teto's tray icon and a right-click menu with Quit, Hide and Talk.
+
+## [0.1.0] - 2026-10-08
+
+First public release (repo made public, installer on GitHub Releases).
+
 ### Changed
 - **Repository reorganized into one folder per language** (`c/ cpp/
   csharp/ go/ java/ javascript/ python/ rust/ typescript/`), with art in
@@ -36,9 +51,8 @@ Workspace-level changes. Each language folder has its own
 - Security review before publishing: 12 findings fixed, each with a
   regression test (see `docs/SECURITY.md`).
 
-## [0.1.0-dev] - 2026-10-08
+### Added (first thin slice, before the public release)
 
-### Added
 - First thin slice: Go brain, Python mood engine, C++ hair physics,
   TypeScript UI, JavaScript quirks, original chibi skin, docs.
 

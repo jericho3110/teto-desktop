@@ -1,6 +1,6 @@
 [package]
 name = "teto-shell"
-version = "0.1.0"
+version = "0.1.1"
 description = "Teto's desktop window: a transparent, always-on-top Tauri shell"
 edition = "2021"
 publish = false
@@ -17,7 +17,7 @@ tauri-build = { version = "2", features = [] }
 cc = "1"           # compiles ../../c/win32hooks with MSVC (or clang-cl) and links it in
 
 [dependencies]
-tauri = { version = "2", features = [] }
+tauri = { version = "2", features = ["tray-icon"] }  # tray-icon: Teto's icon next to the clock
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 getrandom = "0.3"  # OS randomness for the shared token; Rust's std has no RNG

@@ -35,15 +35,16 @@ public sealed class TrayApp : ApplicationContext
         AddMode(voiceMenu, VoiceMode.Off, "Off");
 
         var menu = new ContextMenuStrip();
-        menu.Items.Add(new ToolStripMenuItem("Teto companion") { Enabled = false });
+        menu.Items.Add(new ToolStripMenuItem("Teto's voice & notifications") { Enabled = false });
         menu.Items.Add(new ToolStripSeparator());
         menu.Items.Add(voiceMenu);
-        menu.Items.Add(new ToolStripMenuItem("Quit companion", null, (_, _) => ExitThread()));
+        // Only this helper closes; Teto herself is quit from HER tray icon or right-click menu.
+        menu.Items.Add(new ToolStripMenuItem("Turn off voice && notifications (Teto keeps running)", null, (_, _) => ExitThread()));
 
         _tray = new NotifyIcon
         {
             Icon = SystemIcons.Information, // placeholder until a Teto .ico exists
-            Text = "Teto companion",
+            Text = "Teto: voice & notifications",
             ContextMenuStrip = menu,
             Visible = true,
         };
