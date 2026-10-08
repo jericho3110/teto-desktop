@@ -4,6 +4,10 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versions follo
 
 ## [Unreleased]
 
+### Fixed
+- `apps` quirk used a plain object for lookups; a program named `__proto__`
+  hit JavaScript built-ins. Now a `Map`.
+
 ### Added
 - `apps` quirk: comments on the program you switch to (at most every 20 min).
 - Quirks: `greetings` (time-of-day hello, late-night nag), `poke` (annoyed

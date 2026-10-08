@@ -41,6 +41,7 @@ CHECKS: dict[str, tuple[str, list[list[str]]]] = {
     ]),
     "python": (".", [
         [sys.executable, "-m", "unittest", "discover", "-s", "python/mood"],
+        [sys.executable, "-m", "unittest", "discover", "-s", "python/tools"],
     ]),
     "cpp": ("cpp/physics", [
         ["npm", "run", "build", "--silent"],
@@ -72,6 +73,10 @@ CHECKS: dict[str, tuple[str, list[list[str]]]] = {
     ]),
     "links": (".", [
         [sys.executable, "python/tools/check_links.py"],
+    ]),
+    # Dependency scanners + RCE/injection pattern sweep + project invariants.
+    "security": (".", [
+        [sys.executable, "python/tools/security_scan.py"],
     ]),
 }
 
