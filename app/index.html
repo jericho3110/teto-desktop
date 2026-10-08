@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Teto</title>
+    <link rel="stylesheet" href="/src/styles.css" />
+    <script type="module" src="/src/main.ts" defer></script>
+  </head>
+  <body>
+    <!-- data-solid = this element catches the mouse; everything else is click-through -->
+    <section id="bubble" data-solid hidden>
+      <div class="bubble-text"></div>
+      <div class="bubble-status"></div>
+      <div class="bubble-asks"></div>
+    </section>
+    <div id="character" data-solid></div>
+    <form id="bar" data-solid hidden autocomplete="off">
+      <input type="text" spellcheck="false" />
+      <button type="button" class="stop" hidden title="Interrupt">■</button>
+    </form>
+  </body>
+</html>

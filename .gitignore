@@ -1,0 +1,39 @@
+# build output
+brain/bin/
+physics/dist/
+app/dist/
+app/public/
+app/src-tauri/target/
+app/src-tauri/gen/
+reminders/out/
+reminders/out-test/
+companion/**/bin/
+companion/**/obj/
+*.exe
+*.dll
+*.wasm
+*.pdb
+
+# dependencies / environments
+node_modules/
+.venv/
+venv/
+__pycache__/
+*.pyc
+
+# secrets and local config
+.env
+.env.*
+*.pem
+*.key
+
+# logs, OS and editor junk
+*.log
+Thumbs.db
+.DS_Store
+desktop.ini
+.vscode/
+.idea/
+
+# runtime data (reminders file lives in ~/.teto by default, but just in case)
+*.tsv
