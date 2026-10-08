@@ -12,6 +12,8 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <!-- the test assembly may use internal helpers (TetoVoice.FromClips, Trim, ...) -->
+    <InternalsVisibleTo Include="Teto.Companion.Tests" />
     <PackageReference Include="System.Speech" Version="10.0.12" />
   </ItemGroup>
 

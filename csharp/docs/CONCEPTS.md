@@ -27,6 +27,7 @@ icon, notifications, voice) and its tests.
 20. [Testing with xUnit](#20-testing-with-xunit)
 21. [Principles applied](#21-principles-applied)
 22. [Exercises](#22-exercises)
+- [Teto's voice: audio, binary parsing, encodings](#tetos-voice-audio-binary-parsing-encodings)
 23. [References](#references)
 
 ## 1. Projects, solutions and target frameworks
@@ -219,6 +220,32 @@ text: code blocks become "(code)" and URLs become "(link)".
 3. Show a real Windows toast with the Windows App SDK. What do you need
    that a balloon tip doesn't (hint: an app identity)?
 4. Self-check: why does `Handle` run on the UI thread, but `Commands.Parse` doesn't need to?
+
+## Teto's voice: audio, binary parsing, encodings
+
+`Companion/Voice/` (full story in [docs/VOICE.md](../../docs/VOICE.md)):
+
+| Concept | Where | Notes |
+| --- | --- | --- |
+| `ReadOnlySpan<byte>` / `Span<T>` | `Wav.Read`, `Wav.Write` | views over memory without copying; slicing (`file[..4]`) is bounds-checked |
+| `BinaryPrimitives.ReadUInt32LittleEndian` | `Wav` | read numbers from bytes in a fixed byte order (WAV is little-endian) |
+| UTF-8 string literals `"RIFF"u8` | `Wav` | a `ReadOnlySpan<byte>` constant, no allocation |
+| validating untrusted binary data | `Wav.Read` | every chunk size checked against the bytes present; returns `null` instead of throwing |
+| tuples and nullable value types | `(short[] Samples, int SampleRate)?` | return two values, or none |
+| `Encoding.RegisterProvider(CodePagesEncodingProvider.Instance)` | `OtoIni.ShiftJis` | .NET Core ships only Unicode encodings; this adds legacy ones like Shift-JIS (932) |
+| `CultureInfo.InvariantCulture` | `OtoIni.TryMs` | parse "12.5" the same on every PC, whatever its language settings |
+| `Path.GetFullPath` + prefix check | `OtoIni.SafePath` | path-traversal defense |
+| LINQ (`Where`, `Select`, `OrderByDescending`, `FirstOrDefault`) | `TetoVoice.Load` | query-style transformations over collections |
+| `char` ranges and pattern matching (`c is >= 'ァ' and <= 'ヶ'`) | `ToHiragana`, `KanaSyllables` | katakana and hiragana blocks are 0x60 apart in Unicode |
+| collection expressions `[...]` | `return [];`, `["て", "と"]` | C# 12 shorthand for building lists/arrays |
+| ranges on arrays `samples[start..end]` | `Trim` | copies a slice |
+| a stable hash (FNV-1a) | `TetoVoice.Fnv1a` | `string.GetHashCode()` is randomized per process (anti hash-flooding) |
+| linear interpolation resampling | `Resample` | pitch/speed change |
+| `SoundPlayer` + `MemoryStream` | `TrayApp.Handle` | play a WAV built in memory, asynchronously |
+| `Task.Run` + `SynchronizationContext.Post` | `LoadTetoVoiceInBackground` | heavy work off the UI thread, result back on it |
+| exception filters `catch (Exception e) when (…)` | `LoadTetoVoiceInBackground` | catch only the I/O failures we expect |
+| `[InternalsVisibleTo("Teto.Companion.Tests")]` (MSBuild item) | `.csproj` | the test assembly may use `internal` helpers; everyone else may not |
+| `[Theory]` with `[InlineData]` arrays | `WavTests.RejectsGarbage` | many malformed inputs, one test |
 
 ## References
 
