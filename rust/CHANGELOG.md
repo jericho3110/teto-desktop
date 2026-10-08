@@ -5,6 +5,11 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versions follo
 ## [Unreleased]
 
 ### Added
+- `supervisor::Layout`: dev vs installed helper locations; the dev paths
+  (`env!`) are compiled only into debug builds, so release binaries contain
+  no local folder paths. Skips the companion when the .NET runtime is missing.
+- Packaging: NSIS installer, sidecars + resources via `tauri.bundle.conf.json`,
+  Teto app icons (replacing Tauri's).
 - `ForegroundWindow`: RAII owner of the C snapshot (`NonNull` + `Drop`,
   borrowed `&str` tied to the owner's lifetime); `native://app` event with
   the program name only (never the window title).

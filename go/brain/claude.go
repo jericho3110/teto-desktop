@@ -101,6 +101,10 @@ func (c *Claude) start() error {
 	}
 	cmd.Stderr = logWriter{prefix: "claude stderr: "}
 	if err := cmd.Start(); err != nil {
+		if errors.Is(err, exec.ErrNotFound) {
+			// The most likely problem for someone who just installed Teto.
+			return fmt.Errorf("Claude Code isn't installed (or isn't on PATH): install it from https://code.claude.com and log in, then try again: %w", err)
+		}
 		return fmt.Errorf("start claude: %w", err)
 	}
 	c.stdin, c.running, c.pending, c.done = stdin, true, make(map[string]chan bool), make(chan struct{})

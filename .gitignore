@@ -41,3 +41,8 @@ desktop.ini
 
 # ---- runtime data ---------------------------------------------------
 *.tsv
+
+# ---- packaging (python main.py package) ------------------------------
+build/
+dist/
+rust/shell/binaries/

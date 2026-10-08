@@ -22,6 +22,7 @@ skin generator and the dev tools.
 15. [Testing with unittest and subprocess](#15-testing-with-unittest-and-subprocess)
 16. [Principles applied](#16-principles-applied)
 17. [Exercises](#17-exercises)
+- [The runner and the security scanner](#the-runner-and-the-security-scanner)
 18. [References](#references)
 
 ## 1. Modules, scripts and `if __name__ == "__main__"`
@@ -211,6 +212,29 @@ dependency; the standard library is enough here.)
    constants need to become parameters?
 4. Self-check: why does `ProtocolTest` send `"not json"` in the middle and
    still expect exactly three replies?
+
+## The runner and the security scanner
+
+`main.py` (root) → `python/tools/runner.py`, plus `security_scan.py`.
+See [docs/PACKAGING.md](../../docs/PACKAGING.md) for what the commands do.
+
+| Concept | Where | Notes |
+| --- | --- | --- |
+| **sub-commands** with `argparse` | `runner.py: main` | `add_subparsers` + `set_defaults(fn=...)`: each sub-command maps to a function |
+| `runpy.run_path` | `main.py` | run another file as `__main__` (a tiny front door) |
+| importing a sibling script | `sys.path.insert(0, …)` then `from check_all import …` | shares `ROOT` and `env_with_tools` |
+| `subprocess` on Windows: the PATH gotcha | `runner.py: capture`, `sh` | `env=` sets the child's PATH, but the *program* is looked up with the parent's; resolve with `shutil.which(name, path=…)` first (found live) |
+| `winreg` (Windows-only stdlib) | `smart_app_control()` | read a registry value; `ImportError` on other OSes is caught |
+| `urllib.request.urlretrieve` | `voice` | HTTPS download; certificates are verified by default |
+| `tempfile.TemporaryDirectory` | `voice`, tests | a folder deleted automatically at the end of the `with` |
+| `zipfile` + `metadata_encoding="cp932"` | `safe_extract` | decode Shift-JIS names in old Japanese zips (Python 3.11+; found live: the cp437 re-encode trick broke on 3.14) |
+| `Path.resolve()` + `is_relative_to()` | `safe_extract` | the **zip-slip** defense: refuse entries that resolve outside the target folder |
+| `shutil.copyfileobj` with `z.open()` | `safe_extract` | stream a zip member to disk without loading it all into memory |
+| `input()` with a default of "no" | `voice` | ask before doing something consequential (accepting a licence) |
+| `json` for tool output | `security_scan.py` | `npm audit --json` parsed instead of scraping text |
+| regex tables + `Path.match` globs | `security_scan.py: PATTERNS` | the pattern sweep: data-driven rules, one loop |
+| test doubles via subclassing a private hook | `test_runner.py: SjisZipInfo` | overriding `_encodeFilenameFlags` to write a "legacy" zip: fine in tests, never in production code |
+| `unittest.skipTest` | `RealVoicebankZipTest` | skip when the licensed file isn't present (e.g. on CI) |
 
 ## References
 

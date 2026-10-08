@@ -263,3 +263,11 @@ func TestRemindersClientSendsToken(t *testing.T) { // finding 2
 		t.Fatalf("Authorization = %q", got)
 	}
 }
+
+func TestMissingClaudeGivesAHelpfulError(t *testing.T) {
+	c := &Claude{Bin: "teto-no-such-claude-binary", Workdir: t.TempDir(), Persona: "p", Hub: NewHub()}
+	err := c.Prompt("hi")
+	if err == nil || !strings.Contains(err.Error(), "Claude Code isn't installed") {
+		t.Fatalf("got %v", err)
+	}
+}

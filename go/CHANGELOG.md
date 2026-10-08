@@ -18,6 +18,8 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); versions follo
 - `MaxBytesReader` gets the real `ResponseWriter`.
 
 ### Changed
+- A missing Claude Code now produces a clear "install it from code.claude.com"
+  message in the bubble instead of a raw `exec` error (test added).
 - Moved from `brain/` to `go/brain/`.
 
 ### Added

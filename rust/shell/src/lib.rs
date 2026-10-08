@@ -50,7 +50,7 @@ pub fn run() {
     }
 
     let token = supervisor::new_token();
-    let services = supervisor::start_all(&token, &supervisor::repo_root());
+    let services = supervisor::start_all(&token, &supervisor::Layout::detect());
     eprintln!("supervisor: started {:?}", services.names());
     let config = Config {
         brain_url: format!("http://127.0.0.1:{}", supervisor::BRAIN_PORT),
