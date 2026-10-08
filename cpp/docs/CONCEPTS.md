@@ -243,3 +243,9 @@ And OOP, explained in [docs/PARADIGMS.md](../../docs/PARADIGMS.md):
 
 - C++ Core Guidelines: <https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines>
 - Surma, *Compiling C to WebAssembly without Emscripten*: <https://surma.dev/things/c-to-webassembly/>
+
+### Further learning
+
+- LearnCpp.com (free, thorough C++ course): <https://www.learncpp.com/>
+- Compiler Explorer (see what your C++ compiles to, incl. wasm): <https://godbolt.org/>
+- Exercism C++ track: <https://exercism.org/tracks/cpp>

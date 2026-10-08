@@ -270,6 +270,12 @@ for lifetimes instead of programmer discipline.
 
 - Microsoft Security Response Center, *A proactive approach to more secure code* (~70% memory safety): <https://msrc.microsoft.com/blog/2019/07/a-proactive-approach-to-more-secure-code/>
 - Chromium, memory safety (~70% of high-severity bugs): <https://www.chromium.org/Home/chromium-security/memory-safety/>
-- CISA et al., *The Case for Memory Safe Roadmaps*: <https://www.cisa.gov/resources-tools/resources/case-memory-safe-roadmaps>
+- CISA et al., *The Case for Memory Safe Roadmaps* (the site blocks automated link checkers; verified by hand 2026-10-08): <https://www.cisa.gov/resources-tools/resources/case-memory-safe-roadmaps>
 - Ryan Fleury, *Untangling Lifetimes: The Arena Allocator*: <https://www.rfleury.com/p/untangling-lifetimes-the-arena-allocator>
 - Mike Acton, *Data-Oriented Design and C++* (CppCon 2014): <https://www.youtube.com/watch?v=rX0ItVEVjHc>
+
+### Further learning
+
+- Ulrich Drepper, What Every Programmer Should Know About Memory (PDF): <https://people.freebsd.org/~lstewart/articles/cpumemory.pdf>
+- The Rustonomicon: <https://doc.rust-lang.org/nomicon/>
+- Learn Rust With Entirely Too Many Linked Lists: <https://rust-unofficial.github.io/too-many-lists/>

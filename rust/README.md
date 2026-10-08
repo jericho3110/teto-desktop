@@ -26,7 +26,8 @@ starts `go/brain/bin/teto-brain.exe`, `java/reminders/out`, and
 `csharp/Companion/bin/Release/.../TetoCompanion.exe` if they exist.
 
 > **Smart App Control** must be off to *build* Rust crates with build
-> scripts. It can be turned back on afterwards.
+> scripts and proc-macros. It can be turned back on afterwards. Why:
+> [docs/SMART_APP_CONTROL.md](../docs/SMART_APP_CONTROL.md).
 
 ## Files
 

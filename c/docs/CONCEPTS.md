@@ -225,3 +225,9 @@ written to show every C memory habit (full explanation in
 
 - Raymond Chen, *The Old New Thing* (Win32 history and gotchas): <https://devblogs.microsoft.com/oldnewthing/>
 - Beej's Guide to C Programming: <https://beej.us/guide/bgc/>
+
+### Further learning
+
+- Jens Gustedt, Modern C (free book): <https://gustedt.gitlabpages.inria.fr/modern-c/>
+- Microsoft, Learn to Program for Windows in C++ (Win32 basics): <https://learn.microsoft.com/en-us/windows/win32/learnwin32/learn-to-program-for-windows>
+- Exercism C track: <https://exercism.org/tracks/c>

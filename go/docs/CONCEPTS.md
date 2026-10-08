@@ -349,3 +349,9 @@ supports on Windows (gcc/MinGW); it's not part of the default checks.
 
 - Go by Example: <https://gobyexample.com/>
 - Dave Cheney, *Practical Go*: <https://dave.cheney.net/practical-go/presentations/qcon-china.html>
+
+### Further learning
+
+- A Tour of Go (interactive): <https://go.dev/tour/>
+- Learn Go with Tests (free book): <https://quii.gitbook.io/learn-go-with-tests>
+- Exercism Go track (practice with mentoring): <https://exercism.org/tracks/go>

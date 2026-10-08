@@ -224,3 +224,9 @@ would add nicer reports, parameterized tests and IDE integration.
 
 - Joshua Bloch, *Effective Java* (3rd ed.), items 17 (minimize mutability) and 19 (design for inheritance or prohibit it)
 - Baeldung, try-with-resources: <https://www.baeldung.com/java-try-with-resources>
+
+### Further learning
+
+- dev.java, Learn Java (official tutorials): <https://dev.java/learn/>
+- Oracle, virtual threads guide: <https://docs.oracle.com/en/java/javase/25/core/virtual-threads.html>
+- Exercism Java track: <https://exercism.org/tracks/java>

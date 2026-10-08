@@ -268,3 +268,9 @@ text: code blocks become "(code)" and URLs become "(link)".
 ### Other
 
 - Stephen Cleary, *Async and Await*: <https://blog.stephencleary.com/2012/02/async-and-await.html>
+
+### Further learning
+
+- A tour of C# (Microsoft Learn): <https://learn.microsoft.com/en-us/dotnet/csharp/tour-of-csharp/>
+- Microsoft, memory and spans: <https://learn.microsoft.com/en-us/dotnet/standard/memory-and-spans/>
+- Exercism C# track: <https://exercism.org/tracks/csharp>

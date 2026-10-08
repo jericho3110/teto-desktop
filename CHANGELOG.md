@@ -13,6 +13,8 @@ Workspace-level changes. Each language folder has its own
   `assets/` and workspace docs in `docs/`.
 
 ### Added
+- `docs/SECURITY_SCANNING.md`, `docs/SMART_APP_CONTROL.md`, a language effectiveness
+  scorecard in `docs/LANGUAGES.md`, and verified further-learning links in every doc.
 - Teto's voice from her official voicebank (C#), `docs/VOICE.md`.
 - `main.py` runner and a Windows installer (`python main.py package`), `docs/PACKAGING.md`.
 - Security scan on every change (`python main.py test security`), RCE review in `docs/SECURITY.md`.

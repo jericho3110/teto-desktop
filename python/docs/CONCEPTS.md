@@ -215,7 +215,7 @@ dependency; the standard library is enough here.)
 
 ## The runner and the security scanner
 
-`main.py` (root) → `python/tools/runner.py`, plus `security_scan.py`.
+`main.py` (root) → `python/tools/runner.py`, plus `security_scan.py` (explained in [docs/SECURITY_SCANNING.md](../../docs/SECURITY_SCANNING.md)).
 See [docs/PACKAGING.md](../../docs/PACKAGING.md) for what the commands do.
 
 | Concept | Where | Notes |
@@ -257,3 +257,10 @@ See [docs/PACKAGING.md](../../docs/PACKAGING.md) for what the commands do.
 
 - Real Python, *Python Type Checking*: <https://realpython.com/python-type-checking/>
 - Real Python, *f-strings*: <https://realpython.com/python-f-strings/>
+
+### Further learning
+
+- The official Python tutorial: <https://docs.python.org/3/tutorial/>
+- Python Module of the Week (stdlib by example): <https://pymotw.com/3/>
+- Real Python tutorials: <https://realpython.com/>
+- Exercism Python track: <https://exercism.org/tracks/python>

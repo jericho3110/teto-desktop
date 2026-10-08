@@ -68,3 +68,8 @@ tests, `dotnet test`, `cargo fmt`/`clippy`/`test`, and the link checker.
 - .NET naming guidelines: <https://learn.microsoft.com/en-us/dotnet/standard/design-guidelines/naming-guidelines>
 - Google C++ Style Guide: <https://google.github.io/styleguide/cppguide.html#Naming>
 - Chris Beams, *How to Write a Git Commit Message*: <https://cbea.ms/git-commit/>
+
+### Further learning
+
+- Google style guides (many languages): <https://google.github.io/styleguide/>
+- Conventional Comments (code review etiquette): <https://conventionalcomments.org/>

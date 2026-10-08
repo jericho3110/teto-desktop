@@ -47,3 +47,7 @@ The UI checks `elementFromPoint(x, y)?.closest("[data-solid]")` and toggles
 
 - MDN, `pointer-events`: <https://developer.mozilla.org/en-US/docs/Web/CSS/pointer-events>
 - Tauri, window customization: <https://v2.tauri.app/learn/window-customization/>
+
+### Further learning
+
+- web.dev, rendering performance: <https://web.dev/articles/rendering-performance>

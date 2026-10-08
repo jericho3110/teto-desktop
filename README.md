@@ -1,5 +1,10 @@
 # Teto Desktop
 
+> **🎈 Just for fun.** This is a personal side project made for fun and for
+> learning how nine programming languages can work together. It is not a
+> product, not affiliated with TWINDRILL (Kasane Teto's creators) or Anthropic
+> (Claude), and comes with no warranty (see [LICENSE](LICENSE)).
+
 A chibi desktop assistant who lives on your screen, has quirks and
 animations, and does real work: behind her speech bubble is
 [Claude Code](https://code.claude.com/docs/en/overview), running headless.
@@ -84,7 +89,7 @@ cargo install cargo-audit --locked
 ```
 
 > **Smart App Control** (Windows 11) blocks Cargo's build scripts, so Rust
-> can't build while it's on. See [docs/SECURITY.md](docs/SECURITY.md#developer-notes).
+> can't build while it's on. Why: [docs/SMART_APP_CONTROL.md](docs/SMART_APP_CONTROL.md).
 > Keep the repo out of OneDrive-synced build folders: the runner already
 > puts Rust and packaging output in `%LOCALAPPDATA%\Teto`.
 
@@ -128,6 +133,8 @@ icon for **Voice → Teto / Windows voice / Off**. Helper logs:
 | [docs/MODULES_AND_LIBRARIES.md](docs/MODULES_AND_LIBRARIES.md) | modules, packages, headers, standard libraries, package managers in every language |
 | [docs/FILE_TYPES.md](docs/FILE_TYPES.md) | every file type in the repo (`.json`, `.toml`, `.gitattributes`, `.slnx`, `.class`, …) |
 | [docs/SECURITY.md](docs/SECURITY.md) | threat model, defenses, security review, safe use |
+| [docs/SECURITY_SCANNING.md](docs/SECURITY_SCANNING.md) | the security scanner: every check, why it's dangerous (CWE), limits |
+| [docs/SMART_APP_CONTROL.md](docs/SMART_APP_CONTROL.md) | why building Rust needs Windows Smart App Control off |
 | [docs/PROTOCOL.md](docs/PROTOCOL.md) | every message between the parts |
 | [docs/LEARNING_PATH.md](docs/LEARNING_PATH.md) | a reading order through all nine languages, with exercises |
 | [docs/LIBRARIES_AND_BUILTINS.md](docs/LIBRARIES_AND_BUILTINS.md) | every dependency and standard-library module, and why |

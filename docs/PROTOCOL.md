@@ -182,3 +182,8 @@ characters, titles to 64.
 - Python `-u` (unbuffered output): <https://docs.python.org/3/using/cmdline.html#cmdoption-u>
 - HTML, `application/x-www-form-urlencoded`: <https://url.spec.whatwg.org/#application/x-www-form-urlencoded>
 - Microsoft, Named pipe names (`\\.\pipe\name`): <https://learn.microsoft.com/en-us/windows/win32/ipc/pipe-names>
+
+### Further learning
+
+- MDN, an overview of HTTP: <https://developer.mozilla.org/en-US/docs/Web/HTTP/Guides/Overview>
+- Ilya Grigorik, High Performance Browser Networking (free book): <https://hpbn.co/>

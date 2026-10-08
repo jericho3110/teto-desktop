@@ -331,3 +331,9 @@ only sent from Rust when it moved.
 - Rory Driscoll, *Frame Rate Independent Damping using Lerp*: <https://www.rorydriscoll.com/2016/03/07/frame-rate-independent-damping-using-lerp/>
 - Ollie Johnston & Frank Thomas, *The Illusion of Life* (Disney's 12 principles; "secondary action", "follow through"): <https://en.wikipedia.org/wiki/Twelve_basic_principles_of_animation>
 - Khan Academy, unit vectors: <https://www.khanacademy.org/math/precalculus/x9e81a4f98389efdf:vectors/x9e81a4f98389efdf:unit-vec/v/unit-vector-intro>
+
+### Further learning
+
+- Daniel Shiffman, The Nature of Code (vectors, oscillation, springs): <https://natureofcode.com/>
+- Red Blob Games (interactive math for games): <https://www.redblobgames.com/>
+- Sara Soueidan, Understanding SVG coordinate systems and transformations: <https://www.sarasoueidan.com/blog/svg-coordinate-systems/>

@@ -100,7 +100,7 @@ closed. Walked through component by component:
 ## Continuous checks
 
 `python python/tools/check_all.py security` runs on every change
-(`python/tools/security_scan.py`):
+(`python/tools/security_scan.py`; full guide: [SECURITY_SCANNING.md](SECURITY_SCANNING.md)):
 
 | Layer | What |
 | --- | --- |
@@ -170,7 +170,7 @@ Also checked, no issue found:
 ## Developer notes
 
 - The **Smart App Control** setting in Windows 11 blocks Cargo build
-  scripts, so building the Rust shell requires turning it off (Windows
+  scripts (explained in [SMART_APP_CONTROL.md](SMART_APP_CONTROL.md)), so building the Rust shell requires turning it off (Windows
   Security → App & browser control). Since KB5083769 (April 2026) it can be
   turned back on afterwards without reinstalling Windows.
 - New endpoint? Add it behind `withLocalHost` + `withAuth` and write a
@@ -198,3 +198,9 @@ Also checked, no issue found:
 - Simon Willison, *Prompt injection* series: <https://simonwillison.net/series/prompt-injection/>
 - Wikipedia, DNS rebinding: <https://en.wikipedia.org/wiki/DNS_rebinding>
 - Smart App Control re-enable without reinstall (KB5083769): <https://blog-en.topedia.com/2026/04/smart-app-control-in-windows-11-can-now-be-re-enabled-without-reinstalling/>
+
+### Further learning
+
+- OWASP Cheat Sheet Series: <https://cheatsheetseries.owasp.org/>
+- PortSwigger Web Security Academy (free labs): <https://portswigger.net/web-security>
+- OWASP Top 10 for LLM Applications (prompt injection and more): <https://genai.owasp.org/llm-top-10/>

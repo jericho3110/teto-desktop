@@ -259,3 +259,9 @@ says "exactly 8.0.16". Update deliberately with `npm update` / `cargo update`.
 - Java class file format: <https://docs.oracle.com/javase/specs/jvms/se25/html/jvms-4.html>
 - Python, cached bytecode (`__pycache__`): <https://docs.python.org/3/tutorial/modules.html#compiled-python-files>
 - GitHub Actions workflow syntax (YAML): <https://docs.github.com/en/actions/writing-workflows/workflow-syntax-for-github-actions>
+
+### Further learning
+
+- Learn X in Y minutes: YAML: <https://learnxinyminutes.com/yaml/>
+- Pro Git (free book): <https://git-scm.com/book/en/v2>
+- JSON Schema, getting started: <https://json-schema.org/learn/getting-started-step-by-step>

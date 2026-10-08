@@ -134,3 +134,9 @@ cancellation, `IDisposable`, UI-thread marshalling, named-pipe security.
 - Freya Holmér, *Lerp smoothing is broken*: <https://www.youtube.com/watch?v=LSNQuFEDOyQ>
 - Martin Fowler, *Test Double*: <https://martinfowler.com/bliki/TestDouble.html>
 - OWASP Top Ten: <https://owasp.org/www-project-top-ten/>
+
+### Further learning
+
+- roadmap.sh (learning roadmaps): <https://roadmap.sh/>
+- Exercism (free practice tracks for every language here): <https://exercism.org/tracks>
+- The Missing Semester of Your CS Education (shell, git, tools): <https://missing.csail.mit.edu/>

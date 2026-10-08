@@ -191,3 +191,8 @@ what makes that possible without touching the rest.
 
 - Snyk, *Zip Slip vulnerability*: <https://security.snyk.io/research/zip-slip-vulnerability>
 - NSIS: <https://nsis.sourceforge.io/Main_Page>
+
+### Further learning
+
+- Tauri, distribute your app: <https://v2.tauri.app/distribute/>
+- Microsoft, introduction to code signing: <https://learn.microsoft.com/en-us/windows/win32/seccrypto/cryptography-tools>

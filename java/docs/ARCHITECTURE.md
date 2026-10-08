@@ -18,3 +18,7 @@
 ## References
 
 - JEP 444, Virtual threads: <https://openjdk.org/jeps/444>
+
+### Further learning
+
+- OpenJDK, Project Jigsaw quick-start (modules, jlink): <https://openjdk.org/projects/jigsaw/quick-start>

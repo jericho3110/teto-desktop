@@ -143,3 +143,8 @@ cd cpp/physics; npm run build; npm test
 - MDN, `WebAssembly.instantiateStreaming` ✔ (needs `application/wasm`): <https://developer.mozilla.org/en-US/docs/WebAssembly/Reference/JavaScript_interface/instantiateStreaming_static>
 - Surma, *Compiling C to WebAssembly without Emscripten*: <https://surma.dev/things/c-to-webassembly/>
 - cppreference, language linkage (`extern "C"`): <https://en.cppreference.com/w/cpp/language/language_linkage>
+
+### Further learning
+
+- Daniel Shiffman, The Nature of Code (springs, oscillation, particles): <https://natureofcode.com/>
+- Red Blob Games (interactive game-math explanations): <https://www.redblobgames.com/>

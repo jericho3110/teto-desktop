@@ -253,3 +253,9 @@ Rules of thumb used throughout this repo:
 - Gary Bernhardt, *Functional core, imperative shell*: <https://www.destroyallsoftware.com/screencasts/catalog/functional-core-imperative-shell>
 - Richard Fabian, *Data-Oriented Design* (free online book): <https://www.dataorienteddesign.com/dodbook/>
 - Mike Acton, *Data-Oriented Design and C++*: <https://www.youtube.com/watch?v=rX0ItVEVjHc>
+
+### Further learning
+
+- Refactoring.Guru, design patterns (illustrated): <https://refactoring.guru/design-patterns>
+- Structure and Interpretation of Computer Programs (free PDF): <https://web.mit.edu/6.001/6.037/sicp.pdf>
+- Game Programming Patterns (free online book): <https://gameprogrammingpatterns.com/>

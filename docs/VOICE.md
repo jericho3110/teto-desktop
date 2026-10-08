@@ -163,6 +163,10 @@ loading all its syllables and writing `%TEMP%\teto-voice-sample.wav` to listen t
 
 ### Other
 
-- UTAU wiki, `oto.ini` parameters: <https://utau.fandom.com/wiki/Oto.ini>
 - Wikipedia, Kasane Teto: <https://en.wikipedia.org/wiki/Kasane_Teto>
 - Fowler–Noll–Vo hash: <https://en.wikipedia.org/wiki/Fowler%E2%80%93Noll%E2%80%93Vo_hash_function>
+
+### Further learning
+
+- Xiph.org, A Digital Media Primer for Geeks (video): <https://xiph.org/video/vid1.shtml>
+- OpenUtau (open-source UTAU editor): <https://github.com/stakira/OpenUtau>

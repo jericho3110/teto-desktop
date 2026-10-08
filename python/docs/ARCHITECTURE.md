@@ -40,3 +40,7 @@ rather than dead, so they're reported but don't fail the run.
 
 - Bing Liu, *Sentiment Analysis and Opinion Mining* (lexicon methods): <https://www.cs.uic.edu/~liub/FBS/SentimentAnalysis-and-OpinionMining.pdf>
 - MDN, SVG painting order: <https://developer.mozilla.org/en-US/docs/Web/SVG/Tutorial/Basic_Shapes>
+
+### Further learning
+
+- NLTK book, chapter 6 (classifying text): <https://www.nltk.org/book/ch06.html>

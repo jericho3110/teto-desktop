@@ -244,3 +244,9 @@ is **standard library first**, and every exception is justified in
 ### Other
 
 - Russ Cox, *Our Software Dependency Problem*: <https://research.swtch.com/deps>
+
+### Further learning
+
+- Python Packaging User Guide: <https://packaging.python.org/>
+- Ian Lance Taylor, Linkers (a 20-part series, part 1): <https://lwn.net/Articles/276782/>
+- The Cargo Book: <https://doc.rust-lang.org/cargo/>

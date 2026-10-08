@@ -180,7 +180,7 @@ Cargo compiles and runs `build.rs` before the crate. Ours compiles
 to add `user32.lib`, declares `rerun-if-changed` so edits to the C files
 trigger a rebuild, and lets `tauri_build` generate code from the config.
 **Found live:** Windows Smart App Control blocks running these freshly
-built build scripts, and OneDrive folders make `autocfg` think the output
+built build scripts (full explanation: [docs/SMART_APP_CONTROL.md](../../docs/SMART_APP_CONTROL.md)), and OneDrive folders make `autocfg` think the output
 directory isn't writable. That's why `CARGO_TARGET_DIR` points outside OneDrive.
 
 ## 15. Tauri: commands, events, capabilities, CSP
@@ -261,3 +261,10 @@ Rust's memory rules guarding someone else's memory (more in
 ### Other
 
 - Rust by Example: <https://doc.rust-lang.org/rust-by-example/>
+
+### Further learning
+
+- Rustlings (small exercises): <https://rustlings.rust-lang.org/>
+- Learn Rust With Entirely Too Many Linked Lists (ownership deep-dive): <https://rust-unofficial.github.io/too-many-lists/>
+- Exercism Rust track: <https://exercism.org/tracks/rust>
+- Tauri, getting started: <https://v2.tauri.app/start/>

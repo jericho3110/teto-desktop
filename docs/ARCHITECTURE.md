@@ -241,3 +241,8 @@ Things learned by running against real systems, each pinned by code or a test:
 - Microsoft, named pipes: <https://learn.microsoft.com/en-us/windows/win32/ipc/named-pipes>
 - MDN, WebAssembly: <https://developer.mozilla.org/en-US/docs/WebAssembly>
 - Microsoft, job objects: <https://learn.microsoft.com/en-us/windows/win32/procthread/job-objects>
+
+### Further learning
+
+- The Architecture of Open Source Applications (free books): <https://aosabook.org/en/>
+- Martin Fowler, Software Architecture Guide: <https://martinfowler.com/architecture/>

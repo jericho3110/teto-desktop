@@ -282,3 +282,9 @@ that satisfies the `SanitizableElement` interface (a test double).
 
 - Freya Holmér, *Lerp smoothing is broken*: <https://www.youtube.com/watch?v=LSNQuFEDOyQ>
 - OWASP, XSS prevention cheat sheet: <https://cheatsheetseries.owasp.org/cheatsheets/Cross_Site_Scripting_Prevention_Cheat_Sheet.html>
+
+### Further learning
+
+- TypeScript, The Basics (handbook): <https://www.typescriptlang.org/docs/handbook/2/basic-types.html>
+- Total TypeScript free tutorials: <https://www.totaltypescript.com/tutorials>
+- Exercism TypeScript track: <https://exercism.org/tracks/typescript>

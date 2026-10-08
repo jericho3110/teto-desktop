@@ -17,9 +17,10 @@ that map. The details of each language are in `<language>/docs/CONCEPTS.md`.
 9. [TypeScript and JavaScript](#typescript-and-javascript)
 10. [Why TypeScript here and JavaScript there?](#why-typescript-here-and-javascript-there)
 11. [Concurrency: each language's model](#concurrency-each-languages-model)
-12. [Who covers for whom](#who-covers-for-whom)
-13. [Exercises](#exercises)
-14. [References](#references)
+12. [How effective was each language here?](#how-effective-was-each-language-here)
+13. [Who covers for whom](#who-covers-for-whom)
+14. [Exercises](#exercises)
+15. [References](#references)
 
 ## The map at a glance
 
@@ -184,6 +185,39 @@ give editor checking with no build step.
 | TypeScript/JS | one thread + **event loop**; `async`/`await` | everything in the UI; `requestAnimationFrame` |
 | C++ (wasm) | single-threaded here | physics step per frame |
 
+## How effective was each language here?
+
+A scorecard from actually building Teto: how much code each part took,
+what it produced, how well it's tested, what went well and what bit us.
+Lines are non-blank lines tracked in git (October 2026).
+
+| Language | Job | Code lines | Test lines (tests) | Output | Effectiveness |
+| --- | --- | --- | --- | --- | --- |
+| **Go** | brain: Claude driver, HTTP/SSE, permissions, service clients | 833 | 253 (12) | `teto-brain.exe`, 7.6 MB (release), zero deps | ★★★★★ Goroutines + channels made the permission flow (wait for click *or* timeout *or* crash) about 30 lines. Standard library covered everything. Tests were easy (fake Claude via `TestMain`). Only friction: no WebSocket in std (used SSE instead). |
+| **TypeScript** | UI, animator, skin, sanitizer | 1009 | 97 (9) | bundled into the app | ★★★★☆ The typed `BrainEvent` union caught protocol mistakes at compile time; the biggest codebase, still easy to change. Friction: Node's type stripping can't run every TS feature (parameter properties). |
+| **Python** | mood engine, art generator, runner, scanners, tools | 869 | 96 (9) | scripts | ★★★★★ for glue and tools: the runner, link checker, security scanner and SVG generator were each quick to write with only the standard library. Friction: Windows console encodings and `subprocess` PATH lookup (both found live). For the app itself it's optional (moods), because users may not have Python. |
+| **C#** | tray, notifications, voice, WAV/oto.ini parsing | 728 | 181 (33) | 868 KB single-file exe | ★★★★★ for Windows-specific work: tray, toasts, voices and named-pipe security were all built in; `Span<T>` made safe binary parsing pleasant. Friction: needs the .NET runtime; test projects must match the Windows target framework. |
+| **Rust** | window shell, FFI to C, supervisor | 550 (incl. tests) | in source (6) | `teto-shell.exe`, 4.3 MB | ★★★★☆ Ownership made the C callback and C memory provably safe; Tauri gave a tiny native window. Friction (the most of any language): Smart App Control blocks Cargo builds, OneDrive breaks `autocfg`, release binaries embedded local paths until remapped, and builds are slow (~5 min release). |
+| **C++** | hair physics + particles in wasm | 449 | 140 JS lines (14) | `physics.wasm`, 5.7 KB | ★★★★☆ Tiny, fast, sandboxed; classes/templates at zero cost. Friction: freestanding means writing your own `sin`, placement `new`, `__cxa_pure_virtual`; one silent mistake (a default member value) tripled the file size. |
+| **C** | Win32: idle, cursor, hotkey, job object, foreground window | 293 | 103 (12) | static lib inside `teto-shell.exe` | ★★★★★ for its narrow job: the Windows API *is* C, and every other language can call C. The job object proved itself live (killing the shell killed all helpers). Friction: every memory rule is on you, hence the leak test. |
+| **Java** | reminder service | 279 | 121 (19 checks) | classes + 32 MB jlink runtime | ★★★☆☆ Solid and safe: virtual threads, records, built-in HTTP server. Costs: no JSON parser in the JDK, verbose, and the heaviest runtime to ship (32 MB, the largest part of the installer). A Go or C# reminder service would have been smaller, but less to learn from. |
+| **JavaScript** | quirks (plugins), UI probe, wasm tests | 179 | 140 (14 wasm tests) | loaded at runtime | ★★★★☆ Perfect for drop-in plugins with no build step. Friction: no type checks (the `__proto__` lookup bug would have been easier to spot with types). |
+
+**What the scorecard says overall**
+
+- **Right tool, small code:** the languages doing what they're best at
+  (Go for processes/streams, C for Win32, C# for Windows UI/audio) needed the
+  least code per feature and had the fewest surprises.
+- **The cost of polyglot** is mostly *toolchains*, not code: the hardest
+  problems were Smart App Control, OneDrive, encodings, PATH lookup and
+  packaging, each found by running the real thing.
+- **Testability followed design, not language:** every language has a pure,
+  testable core (`face.ts`, `analyze()`, `ParseRemind`, `ReminderStore`,
+  `Commands.Parse`, `Wav.Read`), which is why 120+ tests were cheap to write.
+- **If you rebuilt Teto in fewer languages**, the natural merges are Java →
+  Go (one less runtime, -32 MB) and the C# companion → Rust/Tauri (Tauri has
+  a tray API), keeping C, C++/wasm, TypeScript and Python where they shine.
+
 ## Who covers for whom
 
 ```text
@@ -223,3 +257,8 @@ give editor checking with no build step.
 
 - Rob Pike, *Concurrency is not Parallelism*: <https://go.dev/blog/waza-talk>
 - Stack Overflow Developer Survey (popularity/strengths context): <https://survey.stackoverflow.co/>
+
+### Further learning
+
+- Rosetta Code (the same task in hundreds of languages): <https://rosettacode.org/wiki/Rosetta_Code>
+- Exercism language tracks: <https://exercism.org/tracks>

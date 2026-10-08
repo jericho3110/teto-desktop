@@ -166,3 +166,9 @@ so cleanup happens even if a step throws.
 ### Other
 
 - javascript.info, closures: <https://javascript.info/closure>
+
+### Further learning
+
+- The Modern JavaScript Tutorial: <https://javascript.info/>
+- Marijn Haverbeke, Eloquent JavaScript (free book): <https://eloquentjavascript.net/>
+- Exercism JavaScript track: <https://exercism.org/tracks/javascript>

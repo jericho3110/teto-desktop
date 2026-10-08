@@ -47,3 +47,8 @@
 
 - Go blog, *Go Concurrency Patterns: Pipelines*: <https://go.dev/blog/pipelines>
 - Mark Seemann, *Composition Root*: <https://blog.ploeh.dk/2011/07/28/CompositionRoot/>
+
+### Further learning
+
+- Go blog, Go Concurrency Patterns: Context: <https://go.dev/blog/context>
+- Go by Example, worker pools: <https://gobyexample.com/worker-pools>

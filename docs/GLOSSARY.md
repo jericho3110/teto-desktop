@@ -144,13 +144,16 @@ Abbreviations for the links: **ARCH** [ARCHITECTURE](ARCHITECTURE.md),
 | Shift-JIS (code page 932) | legacy Japanese text encoding | VOICE |
 | sidecar | a helper executable bundled with a Tauri app | PKG |
 | sine oscillation | `amplitude × sin(ω t)` for periodic motion | ANIM |
-| Smart App Control | Windows feature blocking unknown unsigned programs | SEC |
+| Smart App Control | Windows feature blocking unknown unsigned programs | [SMART_APP_CONTROL](SMART_APP_CONTROL.md) |
 | SOLID | five OOP design principles | PAR |
 | stack | automatic per-call memory | MEM |
 | standard library | what ships with the language | MOD |
 | static vs dynamic linking | library copied into the exe vs loaded at runtime | MOD |
 | struct of arrays (SoA) | one array per field instead of an array of structs | MEM, PAR |
 | supply chain | the dependencies you ship | SEC |
+| SAST / SCA | scanning your own code / your dependencies for known problems | [SECURITY_SCANNING](SECURITY_SCANNING.md) |
+| CWE / CVE | catalogue of weakness types / ids of specific known vulnerabilities | [SECURITY_SCANNING](SECURITY_SCANNING.md) |
+| build script / proc-macro (and why SAC blocks them) | Rust code compiled and run during the build | [SMART_APP_CONTROL](SMART_APP_CONTROL.md) |
 | `textContent` vs `innerHTML` | insert text vs parse HTML | SEC |
 | Template Method | fixed algorithm calling overridable steps | PAR |
 | token (shared secret) | random value proving a request comes from Teto | SEC |
@@ -176,3 +179,7 @@ Abbreviations for the links: **ARCH** [ARCHITECTURE](ARCHITECTURE.md),
 - MDN glossary: <https://developer.mozilla.org/en-US/docs/Glossary>
 - Python glossary: <https://docs.python.org/3/glossary.html>
 - The Rust Reference, glossary: <https://doc.rust-lang.org/reference/glossary.html>
+
+### Further learning
+
+- Wikipedia, glossary of computer science: <https://en.wikipedia.org/wiki/Glossary_of_computer_science>
