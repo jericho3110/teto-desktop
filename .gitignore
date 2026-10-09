@@ -46,3 +46,6 @@ desktop.ini
 build/
 dist/
 rust/shell/binaries/
+
+# ---- code graph (graphify): local only, holds absolute paths ----
+graphify-out/
