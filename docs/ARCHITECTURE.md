@@ -103,6 +103,7 @@ Every link uses a different technique, on purpose:
 | Go → C# | Windows **named pipe** | one JSON line per connection | `services.go`, `csharp/Companion/PipeListener.cs` |
 | TS → C++ | **WebAssembly** exports | numbers only | `typescript/ui/src/physics.ts`, `cpp/physics/src/exports.cpp` |
 | TS → JS | dynamic `import()` + an API object | function calls | `typescript/ui/src/quirks.ts` |
+| VS Code host → webview | `webview.postMessage`, validated on arrival | JSON-like objects | `typescript/vscode/src/extension.ts`, `typescript/vscode/webview/messages.ts` |
 
 **Why SSE and not WebSocket?** Go's standard library has no WebSocket, and
 the traffic is lopsided: replies *stream* to the UI, while commands are

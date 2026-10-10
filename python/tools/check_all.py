@@ -53,6 +53,10 @@ CHECKS: dict[str, tuple[str, list[list[str]]]] = {
         ["npm", "run", "typecheck", "--silent"],
         ["npm", "test", "--silent"],
     ]),
+    "vscode": ("typescript/vscode", [
+        ["npm", "run", "build", "--silent"],  # also type-checks both the host and the webview side
+        ["npm", "test", "--silent"],
+    ]),
     "java": ("java/reminders", [
         ["javac", "-Xlint:all", "-Werror", "-d", "out", *[str(p) for p in Path(ROOT, "java/reminders/src/teto/reminders").glob("*.java")]],
         ["javac", "-Xlint:all", "-Werror", "-cp", "out", "-d", "out-test", *[str(p) for p in Path(ROOT, "java/reminders/test/teto/reminders").glob("*.java")]],

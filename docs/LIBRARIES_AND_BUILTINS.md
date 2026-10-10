@@ -28,7 +28,9 @@ inventory. Keep it in sync when imports change ([How to check](#how-to-check-thi
 | `@tauri-apps/api` | TS | `typescript/ui/src/main.ts` | the JS side of Tauri: `invoke`, `listen`, window control | none: it's how a Tauri webview talks to Rust |
 | `vite` (dev) | TS | `typescript/ui` | dev server with instant reload; production bundling | esbuild alone (no dev server), webpack (slower, more config) |
 | `typescript` (dev) | TS | `typescript/ui` | the type checker | plain JS: no typed protocol |
-| `@types/node` (dev) | TS | `typescript/ui` | types for `node:test` in tests | – |
+| `@types/node` (dev) | TS | `typescript/ui`, `typescript/vscode` | types for `node:test` in tests | – |
+| `@types/vscode` (dev) | TS | `typescript/vscode` | type definitions for the VS Code extension API (types only; VS Code supplies the real `vscode` module at run time) | none: writing an extension in TS needs it; pinned to the minimum engine (1.95) |
+| `vite`, `typescript` (dev) | TS | `typescript/vscode` | bundle the webview (reusing `ui/src`) and type-check both sides | `vsce` for packaging: replaced by `scripts/pack_vsix.py` (stdlib `zipfile`) |
 | `tauri` | Rust | `rust/shell` | native window with the OS webview, IPC, permissions | Electron (bundles Chromium, ~150 MB), raw WebView2 + `windows` crate (lots of COM code) |
 | `tauri-build` (build) | Rust | `rust/shell/build.rs` | generates code from `tauri.conf.json` + capabilities | – (required by Tauri) |
 | `serde` + `serde_json` | Rust | `lib.rs` | `#[derive(Serialize)]` turns structs into JSON for the UI | hand-written JSON (error-prone) |

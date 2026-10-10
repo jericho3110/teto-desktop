@@ -1,0 +1,37 @@
+{
+  "name": "teto-buddy",
+  "displayName": "Teto Buddy",
+  "description": "Teto lives in your VS Code sidebar: she blinks, breathes, swings her drills, and reacts to your typing, saves and errors.",
+  "version": "0.1.0",
+  "publisher": "jericho3110",
+  "license": "MIT",
+  "private": true,
+  "engines": {
+    "vscode": "^1.95.0"
+  },
+  "categories": ["Other"],
+  "main": "./out/host/src/extension.js",
+  "activationEvents": ["onStartupFinished"],
+  "contributes": {
+    "views": {
+      "explorer": [
+        { "type": "webview", "id": "teto.view", "name": "Teto" }
+      ]
+    },
+    "commands": [
+      { "command": "teto.wave", "title": "Teto: Wave" }
+    ]
+  },
+  "scripts": {
+    "sync-assets": "node scripts/sync-assets.mjs",
+    "build": "npm run sync-assets && tsc -p tsconfig.json && tsc -p tsconfig.webview.json && vite build",
+    "test": "node --test \"webview/**/*.test.ts\"",
+    "package": "npm run build && python scripts/pack_vsix.py"
+  },
+  "devDependencies": {
+    "@types/node": "^26.6.4",
+    "@types/vscode": "1.95.0",
+    "typescript": "~6.0.3",
+    "vite": "^8.0.16"
+  }
+}

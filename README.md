@@ -112,6 +112,7 @@ icon for **Voice → Teto / Windows voice / Off**. Helper logs:
 | `python/` | `python -m unittest discover -s python/mood` | 5 |
 | `cpp/physics` | `npm run build ; npm test` | 14 on the real `.wasm`: hair physics + particle memory (pool, free list, zero-copy views) |
 | `typescript/ui` | `npm run typecheck ; npm test` | 9, incl. skin sanitizer |
+| `typescript/vscode` | `npm run build ; npm test` | 3, message validation ([Teto in VS Code](typescript/vscode/README.md)) |
 | `java/reminders` | see [java/README.md](java/README.md) | 19 checks, incl. forged requests |
 | `c/win32hooks` | see [c/README.md](c/README.md) | 12, incl. a 20,000-cycle leak check |
 | `csharp/` | `dotnet test Teto.slnx` | 33: pipe, message parsing, voice (WAV/oto.ini parsing, path traversal, babble) |

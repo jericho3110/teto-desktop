@@ -66,6 +66,7 @@ can, with or without Teto.
 | | strict Content Security Policy: scripts only from the app, network only to the brain | `rust/shell/tauri.conf.json` |
 | | least-privilege Tauri capabilities (drag, focus, click-through on its own window) | `rust/shell/capabilities/default.json` |
 | | skins sanitized with an allow-list (no scripts, handlers, `foreignObject`, links, external `url()`) | `typescript/ui/src/sanitize.ts` |
+| VS Code webview | CSP `default-src 'none'` + nonce'd script + `wasm-unsafe-eval` only; files only from the extension (`localResourceRoots`); no network; host messages allow-list validated | `typescript/vscode/src/extension.ts`, `webview/messages.ts` |
 | Privacy | the C module can read window titles, but only the foreground **program name** ever leaves the C/Rust layer (data minimization); `OpenProcess` asks only for `PROCESS_QUERY_LIMITED_INFORMATION` | `c/win32hooks`, `rust/shell/src/lib.rs` |
 | Voice | the voicebank is downloaded by the user (its terms forbid redistribution, so it's never in the repo); parsed as untrusted data: bounded WAV parser, oto.ini paths can't leave the voicebank folder, size limits | `csharp/Companion/Voice/` |
 | Downloads | `python main.py voice` shows the licence and asks first; HTTPS with certificate checks; the zip is extracted as untrusted data: zip-slip paths refused, only voicebank file types written (tests incl. a malicious zip) | `python/tools/runner.py: safe_extract` |

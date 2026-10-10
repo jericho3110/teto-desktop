@@ -1,0 +1,39 @@
+/* Teto sits at the bottom of the sidebar panel and scales with its width. */
+html,
+body {
+  margin: 0;
+  height: 100%;
+  overflow: hidden;
+  background: transparent;
+  user-select: none;
+}
+
+#character {
+  position: absolute;
+  bottom: 4px;
+  left: 50%;
+  width: min(92vw, 240px);
+  aspect-ratio: 3 / 4; /* the skin's viewBox is 300 x 400 */
+  transform: translateX(-50%);
+  cursor: pointer;
+}
+
+#character svg {
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  pointer-events: none;
+  filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.25));
+}
+
+#character svg * {
+  pointer-events: visiblePainted;
+}
+
+#fx {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}

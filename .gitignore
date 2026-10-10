@@ -3,6 +3,8 @@ go/brain/bin/
 cpp/physics/dist/
 typescript/ui/dist/
 typescript/ui/public/
+typescript/vscode/out/
+typescript/vscode/media/
 rust/shell/target/
 rust/shell/gen/
 java/reminders/out/

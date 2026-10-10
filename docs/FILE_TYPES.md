@@ -169,6 +169,8 @@ says "exactly 8.0.16". Update deliberately with `npm update` / `cargo update`.
 | `typescript/ui/node_modules/` | `npm install` | downloaded packages (hundreds of folders) |
 | `typescript/ui/public/` | `sync-assets.ts` | copies of skins, quirks and `physics.wasm` for Vite to serve |
 | `typescript/ui/dist/` | `vite build` | the bundled production UI |
+| `typescript/vscode/out/`, `media/` | `npm run build` | compiled extension, bundled webview, copied skin and wasm |
+| `%LOCALAPPDATA%\Teto\vsix\*.vsix` | `npm run package` | the VS Code extension package: a zip with `extension.vsixmanifest`, `[Content_Types].xml` and `extension/` |
 | `__pycache__/*.pyc` | Python | cached **bytecode** of imported modules, so imports are faster next time |
 | `.lib`, `.obj`, `.pdb`, `.dll` | MSVC/clang | static libraries, object files, debug symbols, dynamic libraries |
 
