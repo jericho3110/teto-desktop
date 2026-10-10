@@ -138,6 +138,7 @@ Done before making the repository public. Every fix has a regression test.
 | 12 | Info | `?token=` was accepted on every endpoint | only `/events` | `TestQueryTokenOnlyWorksForEvents` |
 | 13 | Low | `apps.js` looked up program names on a plain object: a program named `__proto__`/`constructor` hit JavaScript's built-ins (prototype-key lookup) | a `Map` | verified with a quick Node run |
 | 14 | Medium (privacy) | Release binaries contained the developer's Windows user name: Rust embeds source paths for panic messages (174 paths into `~/.cargo`, 26 into `~/.rustup`), the C# exe recorded its `.pdb` path | `--remap-path-prefix` for cargo/rustup/repo paths, C# `DebugType=none`, Go `-trimpath`; `package` now **fails** if any shipped binary contains the home path or user name (UTF-8 or UTF-16) | `runner.py: assert_no_local_paths`; verified on all 107 installed files |
+| 15 | **High** (2026-10-10) | govulncheck: 9 Go standard-library vulnerabilities (GO-2026-6603 … 6617 in `net/http`, its HTTP/2 code, `crypto/tls`, `mime/multipart`) reachable from the brain's code, in Go 1.27.0 | `toolchain go1.27.2` in `go/brain/go.mod`: Go downloads and builds with the patched release automatically (`GOTOOLCHAIN=auto`) | the security gate runs govulncheck on every `python main.py test`; it now reports "No vulnerabilities found" |
 
 Also checked, no issue found:
 

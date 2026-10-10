@@ -7,6 +7,9 @@ Workspace-level changes. Each language folder has its own
 
 ## [Unreleased]
 
+### Security
+- Build the Go brain with Go 1.27.2 (`toolchain` line in `go.mod`), fixing 9 standard-library vulnerabilities govulncheck found reachable in Go 1.27.0 (HTTP/2, `net/http`, `crypto/tls`, `mime/multipart`).
+
 ## [0.1.1] - 2026-10-08
 
 ### Fixed
