@@ -53,7 +53,7 @@ virtual threads, atomic file writes, central error handling.
 
 ## Stage 5: driving Claude Code (Go)
 
-**Read:** `go/brain/claude.go`, then `brain_test.go: fakeClaude, TestPermissionRoundTrip`, then [PROTOCOL.md](PROTOCOL.md).
+**Read:** `go/brain/claude.go`, then `brain_test.go: fakeClaude, TestPermissionRoundTrip`, then [PROTOCOL.md](PROTOCOL.md). For how each link works underneath (FFI, WebAssembly, pipes), read [INTEROP.md](INTEROP.md).
 **Concepts:** long-lived child processes, goroutines, channels + `select`, fail closed, test doubles.
 **Exercise:** run the brain and `python/tools/smoke_brain.py` with and without `--allow` in a scratch `-workdir`.
 **Self-check:** if you close Teto while a card is open, what does Claude receive, and which line decides?

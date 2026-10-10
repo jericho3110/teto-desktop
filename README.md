@@ -138,6 +138,7 @@ icon for **Voice → Teto / Windows voice / Off**. Helper logs:
 | [docs/SECURITY_SCANNING.md](docs/SECURITY_SCANNING.md) | the security scanner: every check, why it's dangerous (CWE), limits |
 | [docs/SMART_APP_CONTROL.md](docs/SMART_APP_CONTROL.md) | why building Rust needs Windows Smart App Control off |
 | [docs/PROTOCOL.md](docs/PROTOCOL.md) | every message between the parts |
+| [docs/INTEROP.md](docs/INTEROP.md) | **how** the languages talk underneath: the C ABI, FFI ownership and callbacks, WebAssembly memory, pipes, HTTP, named pipes, framing, and when to pick each |
 | [docs/LEARNING_PATH.md](docs/LEARNING_PATH.md) | a reading order through all nine languages, with exercises |
 | [docs/LIBRARIES_AND_BUILTINS.md](docs/LIBRARIES_AND_BUILTINS.md) | every dependency and standard-library module, and why |
 | [docs/CONVENTIONS.md](docs/CONVENTIONS.md) | layout, naming, commits |

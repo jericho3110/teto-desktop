@@ -10,6 +10,9 @@ Workspace-level changes. Each language folder has its own
 ### Security
 - Build the Go brain with Go 1.27.2 (`toolchain` line in `go.mod`), fixing 9 standard-library vulnerabilities govulncheck found reachable in Go 1.27.0 (HTTP/2, `net/http`, `crypto/tls`, `mime/multipart`).
 
+### Added
+- `docs/INTEROP.md`: how the languages talk underneath (C ABI, FFI ownership and callbacks, WebAssembly linear memory, Tauri IPC, pipes, HTTP, named pipes, framing), compared with the unstoppable-force math project, plus a guide for picking a technique.
+
 ## [0.1.1] - 2026-10-08
 
 ### Fixed

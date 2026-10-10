@@ -84,6 +84,9 @@ Cross-language contracts live in [PROTOCOL.md](PROTOCOL.md) and
 
 ## How the languages link
 
+How each technique works underneath (the C ABI, memory ownership, WebAssembly
+memory, pipes and framing) is explained in [INTEROP.md](INTEROP.md).
+
 Every link uses a different technique, on purpose:
 
 | Link | Technique | Format | Where |
