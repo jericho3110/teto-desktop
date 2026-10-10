@@ -2,7 +2,7 @@
   "name": "teto-buddy",
   "displayName": "Teto Buddy",
   "description": "Teto lives in your VS Code sidebar: she blinks, breathes, swings her drills, and reacts to your typing, saves and errors.",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "publisher": "jericho3110",
   "license": "MIT",
   "private": true,
@@ -26,7 +26,8 @@
     "sync-assets": "node scripts/sync-assets.mjs",
     "build": "npm run sync-assets && tsc -p tsconfig.json && tsc -p tsconfig.webview.json && vite build",
     "test": "node --test \"webview/**/*.test.ts\"",
-    "package": "npm run build && python scripts/pack_vsix.py"
+    "package": "npm run build && python scripts/pack_vsix.py",
+    "sticker": "python scripts/make_sticker.py"
   },
   "devDependencies": {
     "@types/node": "^26.6.4",

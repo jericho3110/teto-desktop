@@ -50,7 +50,10 @@ async function main() {
     if (!msg) return;
     switch (msg.type) {
       case "typing":
+        // The thinking face alone is subtle: also move her mouth and nudge the drills.
         teto.setThinking(true);
+        teto.talk();
+        teto.poke(0.35);
         clearTimeout(typingTimer);
         typingTimer = setTimeout(() => teto.setThinking(false), 2500);
         break;

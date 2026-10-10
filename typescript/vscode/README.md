@@ -46,6 +46,26 @@ is in the **Teto** section. Drag the section's border to give her more room.
 | `npm run package` | build, then `scripts/pack_vsix.py` zips everything into a `.vsix` |
 | `code --install-extension <vsix> --force` | installs it; `--force` replaces an older build |
 
+## An animated Teto sticker for the Doki Theme
+
+The Doki Theme can show a sticker in the corner of the editor. Its own
+characters are static pictures; `npm run sticker` makes an **animated** Teto
+instead (drills sway joint by joint, ahoge wiggles, head tilts, blinks, bobs)
+at `%LOCALAPPDATA%\Teto\sticker\teto-animated.svg`. Point the Doki setting at it
+(in JSON every backslash is written twice):
+
+```jsonc
+"doki.sticker.path": "C:\\Users\\<you>\\AppData\\Local\\Teto\\sticker\\teto-animated.svg"
+```
+
+Doki notices the change and installs the sticker by itself (it edits VS Code's
+CSS, so VS Code asks to restart and shows an "Unsupported" warning). Remove it
+with **Doki-Theme: Remove Sticker/Background**.
+
+**Why an SVG can animate safely here:** an SVG used as an image may run its
+built-in animations (SMIL `<animate>`, `<animateTransform>`) but never scripts.
+The generator checks that the output has no `<script>`.
+
 ## How it works
 
 ```text

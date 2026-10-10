@@ -81,7 +81,7 @@ export function activate(ctx: vscode.ExtensionContext) {
       webviewOptions: { retainContextWhenHidden: true }, // keep her animation state when the panel is hidden
     }),
     vscode.workspace.onDidChangeTextDocument((e) => {
-      if (e.document.uri.scheme !== "file" || e.contentChanges.length === 0) return;
+      if (!["file", "untitled"].includes(e.document.uri.scheme) || e.contentChanges.length === 0) return;
       wake();
       const now = Date.now();
       if (now - lastTyping >= TYPING_EVERY_MS) {

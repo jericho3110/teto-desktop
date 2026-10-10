@@ -85,6 +85,17 @@ you can see exactly what goes in. It escapes values put into the XML
 VS Code validated it on install:
 `Extension 'jericho3110.teto-buddy' v0.1.0 was successfully installed.`
 
+## 5b. The animated sticker (SVG animation)
+
+| Concept | Where | Example | Gotcha |
+| --- | --- | --- | --- |
+| **SMIL animation** | `scripts/make_sticker.py` | `<animateTransform type="rotate" values="-4;4;-4" dur="2.6s" repeatCount="indefinite"/>` | runs even when the SVG is only an image; scripts never do |
+| **`additive="sum"`** | `spin()` | adds the sway on top of the element's own `translate(...)` | without it the animation *replaces* the transform and the drill jumps to (0,0) |
+| **phase offset** (`begin="-0.22s"` per joint) | drills | each joint starts slightly later: the drill moves like a wave | a negative `begin` means "already this far into the loop" |
+| **presentation attribute vs `style`** | blink | `display="none"` can be animated; `style="display:none"` wins over any animation | that's why the generator rewrites the closed-eyes group |
+| **padding the viewBox** | `-24 -24 348 448` | room for drill tips swinging outside the original 300 x 400 | found live: the first render clipped the drills at the edges |
+| **found live: CSS transform ownership** | `static/webview.css` | centring with `translateX(-50%)` broke, because the animator writes `transform` each frame | one property, one owner: centre with `margin: 0 auto` |
+
 ## 6. Exercises
 
 1. Add a reaction: when a debug session starts (`vscode.debug.onDidStartDebugSession`), send `{type: "emote", emotion: "excited"}`.

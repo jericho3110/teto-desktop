@@ -1,5 +1,14 @@
 # Changelog: typescript/vscode (Teto Buddy)
 
+## [0.1.1] - 2026-10-10
+
+### Fixed
+- Teto wasn't centred: the animator sets `transform` on her element every frame (for hops), which replaced the CSS `translateX(-50%)` used for centring. Centred with margins instead.
+- Typing looked ignored: the "thinking" face is subtle and a save's hearts outlast it. Typing now also moves her mouth and nudges her drills. Untitled (unsaved) files count too.
+
+### Added
+- `scripts/make_sticker.py` (`npm run sticker`): an animated Teto SVG for the Doki Theme's `doki.sticker.path`, replacing a static anime sticker: drills sway joint by joint, the ahoge wiggles, her head tilts, she blinks and bobs. SMIL animations only (no scripts); ids and pivots read from the skin manifest.
+
 ## [0.1.0] - 2026-10-10
 
 ### Added
